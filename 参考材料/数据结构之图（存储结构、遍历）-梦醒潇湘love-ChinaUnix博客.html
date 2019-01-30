@@ -1,0 +1,2084 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0054)http://blog.chinaunix.net/uid-26548237-id-3483650.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" async="" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/ga.js.下载"></script><script>
+var ua = navigator.userAgent.toLowerCase();
+if(ua.match(/MicroMessenger/i)=="micromessenger") {
+    location.href='http://blog.chinaunix.net/article.php?url='+ window.location.href;
+}
+</script>
+        <style>
+    .Blog_nav1_2 a em { display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+
+<link rel="stylesheet" type="text/css" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/style.css">
+<link rel="stylesheet" type="text/css" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/qqFace.css">
+<link rel="stylesheet" type="text/css" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/asyncbox.css">
+<link rel="stylesheet" type="text/css" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/pager.css">
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/jquery.min.js.下载"></script>
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/jquery.cookies.min.js.下载"></script>
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/AsyncBox.v1.4.5.js.下载"></script>
+<title>数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客</title>
+<meta name="description" content="
+	 
+
+
+	一、图的存储结构 
+
+
+	1.1 邻接矩阵 
+
+
+	    图的邻接矩阵存储方式是用两个数组来表示图。一个一维数组存储图中顶点信息，一个二维数组（邻接矩阵）存储图中的边或弧的信息。
+ ">
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/h600.js.下载"></script>
+
+<script type="text/javascript">
+if(/AppleWebKit.*Mobile/i.test(navigator.userAgent) || (/MIDP|SymbianOS|NOKIA|SAMSUNG|LG|NEC|TCL|Alcatel|BIRD|DBTEL|Dopod|PHILIPS|HAIER|LENOVO|MOT-|Nokia|SonyEricsson|SIE-|Amoi|ZTE/.test(navigator.userAgent))){
+	try{
+		if(!/iPad/i.test(navigator.userAgent)){
+			var oldurl=window.location.href;
+			var wapUrl= oldurl.replace('blog.chinaunix.net', "m.blog.chinaunix.net") ;
+			window.location.href = wapUrl;
+		}
+	}catch(e){}
+}
+</script>
+
+
+<script language="javascript">
+//用户是否在线
+var isOnLine = '';
+$(document).ready(function(){
+	var blog = {'name': '', 'name_url': '', 'brief': ''};
+	//消息通知显示和隐藏控制
+	$('#show_message_slide_button').hover(
+		function(){
+			$('#message_slide_div').slideDown(100);											   
+		},
+		function(){
+			
+		}
+	);
+
+	$('#message_slide_div').hover(
+		function(){
+			
+		},
+		function(){
+			$('#message_slide_div').slideUp(100);
+		}
+	);
+	
+	//编辑博客名
+	$('#editbna').click(function(){
+		blog.name = $('#bnaspan a').text();
+		var val = '<input id="bnainput" type="text" style="float:left" value="" rel="' +$(this).attr('rel') + '" /><input id="bnasub" type="button" style="float:left" class="btn1"><input id="bnacanl" type="button" style="float:left" class="btn2"><div class="clear"></div>';
+		$('#bnaspan').html(val);
+		$('#bnainput').val(blog.name);
+		$(this).parent().hide();
+	});
+	
+	$('#bnasub').live('click', function(){
+	    var rel = eval('({' + $('#bnainput').attr('rel') + '})');
+		var name = $('#bnainput').val();
+		if(name != blog.name){
+	        $.ajax({
+			    type: "POST",
+			    url: rel.url,	
+			    data: {
+				    'name' : name
+			    },
+			    success:function(data){
+				    if(data == 0){
+						$('#bnaspan').html(blog.name);
+						$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+				    }else if(data == -1){
+                                        showErrorMsg('名称中含有违禁词，请从新编辑!', '消息提示');
+                                    }else{
+						$('#bnaspan').html(data);
+						$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+				    }
+					$('#editbna').parent().show();
+				}
+			});
+		}else{
+		    $('#bnaspan').text(blog.name).html();
+			$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+			$('#editbna').parent().show();
+		}
+	});
+	
+	$('#bnacanl').live('click', function(){
+		var rel = eval('({' + $('#bnainput').attr('rel') + '})');
+		$('#bnaspan').html('<a href="' + rel.href + '">' + blog.name + '</a>');
+		$('#editbna').parent().show();
+	});
+	
+	//编辑签名
+	$('#editbrief').click(function(){
+	    blog.brief = $('#briefem').text();
+		var val = '<input id="brfinput" type="text" style="float:left" value="" rel="' + $(this).attr('rel') + '" /><input id="brfsub" style="float:left"  type="button" class="btn1"><input style="float:left"  id="brfcanl" type="button" class="btn2"><div class="clear"></div>';
+		$('#briefem').html(val);
+		$('#brfinput').val(blog.brief);
+		$(this).parent().hide();
+	});
+	
+	$('#brfsub').live('click', function(){
+	    var url = $('#brfinput').attr('rel');
+		var brief = $('#brfinput').val();
+		if(brief != blog.brief){
+	        $.ajax({
+			    type: "POST",
+			    url: url,	
+			    data: {
+				    'brief' : brief
+			    },
+			    success:function(data){
+				    if(data == 0){
+				        $('#briefem').html(blog.brief);
+				    }else if(data == -1){
+                                        showErrorMsg('签名中含有违禁词，请从新编辑!', '消息提示');
+                                    }else{
+						$('#briefem').html(data);
+				    }
+					$('#editbrief').parent().show();
+				}
+			});
+		}else{
+		    $('#briefem').text(blog.brief).html();
+			$('#editbrief').parent().show();
+		}
+	});
+	
+	$('#brfcanl').live('click', function(){
+		$('#briefem').html(blog.brief);
+		$('#editbrief').parent().show();
+	});
+
+});
+</script>
+<script src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/share.js.下载"></script><link rel="stylesheet" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/share_style0_16.css"></head>
+<body>
+<div class="box">
+  <!-- 一级导航 -->
+  <div class="Blog_nav1">
+    <div class="Blog_nav1_2"><a href="http://blog.chinaunix.net/"><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/1.png"></a><a href="http://www.chinaunix.net/" class="Blog_a1">Chinaunix首页</a> | <a href="http://bbs.chinaunix.net/" target="_blank">论坛</a> | <a href="http://u.it168.com/vip/"><font color="red">认证专区</font></a> | <a href="http://blog.chinaunix.net/" target="_blank">博客</a><span class="Blog_span1"></span>
+              <a href="http://blog.chinaunix.net/site/login.html" class="Blog_a1" onclick="linkto()">登录</a> | <a href="http://u.it168.com/Register?webid=5&amp;returnUrl=http%3A%2F%2Fblog.chinaunix.net%2Fuid-26548237-id-3483650.html" class="Blog_a1">注册</a>
+          </div>
+	<!--自动提示层-->
+	<style>
+	.bor13221{border:1px #bbb solid;width:206px;position:absolute;top:34px;left:0;background:#fff; z-index:9999;display:none}
+	.bor13221 li{height:26px;line-height:26px;padding-left:6px;color:#555;font-size:14px;cursor:pointer;}
+	.here{background:#f3f3f3;}
+    </style>
+
+	<!--自动提示层-->
+    <div class="Blog_nav1_3" style="position:relative; z-index:9999;">
+	 <div class="bor13221" style="display: none;">
+      <ul>
+      </ul>
+    </div>
+	  <form action="http://blog.chinaunix.net/site/search.html" method="post">
+		<input type="text" autocomplete="off" class="Blog_txt1" id="search_input_id" name="keywords">
+		<select class="Bolg_sel1" name="type" id="search_type_blog">
+		  <option value="blog">博文</option>
+		  <option value="author">博主</option>
+		</select>
+		<input type="submit" value="" name="submit" class="Blog_btn1">
+	 </form>
+    </div>
+    <div class="clear"></div>
+    <div class="Blog_nav1_layer1" id="message_slide_div" style="display:none;">
+	    <ul>
+	    	<li><a href="http://blog.chinaunix.net/message/private.html">私人消息()</a></li>
+	    	<li><a href="http://blog.chinaunix.net/message/system.html">系统消息()</a></li>
+	    	<li><a href="http://blog.chinaunix.net/member/request.html">好友请求()</a></li>
+	    	<li><a href="http://blog.chinaunix.net/member/notification.html">通知管理()</a></li>
+	    </ul>
+    </div>
+  </div>
+   <script type="text/javascript">
+  	$(function(){
+		//点击添加进文本框
+		$(".bor13221 li").live( 'click' , function(e){
+			if ( e && e.stopPropagation )
+			{
+				//因此它支持W3C的stopPropagation()方法
+				e.stopPropagation();
+			}
+			else
+			{
+				//否则，我们需要使用IE的方式来取消事件冒泡
+				window.event.cancelBubble = true; 
+			}
+			$('#search_input_id').val($(this).text());
+			$(".bor13221 ul").html('');
+			$(".bor13221").hide();
+		});
+		$(".bor13221 ul li").live({
+			mouseenter:
+			function()
+			{
+				$(".bor13221 ul li").removeClass("here");
+				$(this).addClass('here');
+			},
+			mouseleave:
+			function()
+			{
+				$(".bor13221 ul li").removeClass("here");
+				$(this).removeClass('here');
+			}
+		});
+		//自动提示
+		$('#search_input_id').keyup(function(event){
+			//取消博主的提示
+			var search_type_blog = $('#search_type_blog').val();
+			if(search_type_blog == 'author') return false;
+
+			var key = $(this).val();
+			//获取键值
+			var keycode = event.which; //38 上 40 下
+			var count = $('.bor13221 ul li').length;
+			if(key != '' && keycode != 38 && keycode != 40)
+			{
+				$.getJSON("http://api.sou.it168.com/autoWenKuCloud?jsoncallback=?",{"ty":"json","offset":"0","limit":"10","q":key}, function(result)
+					{
+						var arr = result.data;
+
+						var html ='';
+						for (i=0;i<arr.length ;i++ )   
+						{   
+							html += '<li>'+arr[i]+'</li>';
+						} 
+						
+						$('.bor13221 ul').html(html);
+						(arr.length > 1) ?  $(".bor13221").show() : $(".bor13221").hide();
+					}
+				);
+			}
+			else if(keycode == 38)
+			{
+				if(count > 0)
+				{
+					//遍历li
+					var curr_li_num;
+					$('.bor13221 ul li').each(function(index , dom){
+						if($(dom).attr('class') == 'here')
+						{
+							curr_li_num = index;
+							return false;
+						}
+					}); 
+					var next_li_num;
+					if(typeof(curr_li_num) == 'undefined')
+					{
+						next_li_num = count - 1;
+					}
+					else
+					{
+						if(curr_li_num == 0)
+						{
+							next_li_num = count - 1;
+						}
+						else
+						{
+							next_li_num = curr_li_num - 1;
+						}
+					}
+					$(".bor13221 ul li").removeClass("here");
+					$(".bor13221 ul li:eq(" + next_li_num + ")").addClass("here");
+					$('#search_input_id').val($(".bor13221 ul li:eq(" + next_li_num + ")").text());
+				}
+			}
+			else if(keycode == 40)
+			{
+				if(count > 0)
+				{
+					//遍历li
+					var curr_li_num;
+					$('.bor13221 ul li').each(function(index , dom){
+						if($(dom).attr('class') == 'here')
+						{
+							curr_li_num = index;
+							return false;
+						}
+					}); 
+					var next_li_num;
+					if(typeof(curr_li_num) == 'undefined')
+					{
+						next_li_num = 0;
+					}
+					else
+					{
+						if(curr_li_num == count - 1)
+						{
+							next_li_num = 0;
+						}
+						else
+						{
+							next_li_num = curr_li_num + 1;
+						}
+					}
+					$(".bor13221 ul li").removeClass("here");
+					$(".bor13221 ul li:eq(" + next_li_num + ")").addClass("here");
+					$('#search_input_id').val($(".bor13221 ul li:eq(" + next_li_num + ")").text());
+				}
+			}
+		});
+		$(document).click(function(e){
+			$(".bor13221").hide();
+		});
+
+	});
+  </script>
+  <!-- 头 -->
+  <!-- 推荐博客-->
+  <div class="Blog_header1">
+	    <div class="Blog_header1_1">
+      <p class="Blog_p1"><em><a href="http://blog.chinaunix.net/uid/26548237.html">梦醒潇湘love</a></em><a href="http://loveyou1314.blog.chinaunix.net/">loveyou1314.blog.chinaunix.net</a></p>      <p class="Blog_p2" style="color:#125A94">通过别人的经验来提高自己的同时，自己要多多努力~~</p>
+    </div>
+        <div class="Blog_header1_2" id="hide_div1">
+    	<span class="Blog_span3"></span>
+    	<div class="float_div1" style="white-space:nowrap;" onmouseover="javascript:isMove=false" onmouseout="javascript:isMove=true">
+	    <ul id="noticev2" style="line-height: 25px; margin-top: -25px;">  
+		    		    <li><a href="http://blog.chinaunix.net/uid-30204791-id-5752644.html" target="_blank">2016中国系统架构师大会门票申请 </a></li>
+		    		    <li><a href="http://blog.chinaunix.net/uid-24789255-id-5568211.html" target="_blank">新注册用户开通“博客写作”功能，需要申请与实名认证 </a></li>
+		    		    <li><a href="http://blog.chinaunix.net/uid-10718265-id-5141960.html" target="_blank"> 互动：数据分析与云计算应用案例 （征集|参与）</a></li>
+		    	    </ul>
+	    </div>
+    </div>
+            <div class="Blog_header1_3"><a href="http://blog.chinaunix.net/uid/26548237.html">首页</a>　| 　<a href="http://blog.chinaunix.net/uid/26548237/abstract/1.html">博文目录</a>　| 　<a href="http://blog.chinaunix.net/member/profile/uid/26548237.html">关于我</a></div>
+  </div>
+    
+  <!-- 内容部分 -->
+  	<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/XRegExp.js.下载"></script> <!-- XRegExp is bundled with the final shCore.js during build -->
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/shCore.js.下载"></script>
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/shAutoloader.js.下载"></script>
+<link type="text/css" rel="stylesheet" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/shCore.css">
+<link type="text/css" rel="Stylesheet" href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/shThemeDefault.css">
+<link href="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/fck_editorarea.css" rel="stylesheet" type="text/css">
+<style>
+.Blog_p5 em{ display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+  <div class="Blog_contain"> 
+    <!-- 左 -->
+	<style>
+    .Blog_left1_1 p a em { display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+
+<script language="javascript">
+$(document).ready(function(){
+	$('#ConcernBtn').bind('click',function(){
+			var cuid = '26548237';
+			var url =  '/member/concern.html';
+			var type = $(this).attr('rel');
+		
+			if(type == 'addConcern'){
+				$.ajax({
+					type : 'get',
+					url  : url,
+					data : {'op' : 'ajaxadd' , 'cuid' : cuid, 'random' : Math.random()},
+					success : function(msg){	
+					   if(msg == -1){
+						   showErrorMsg('参数错误！');
+					   } else if (msg == 0){
+						   showErrorMsg('关注失败，没有该用户！');
+					   } else if (msg == 1){
+						   showErrorMsg('关注失败，您已经关注了该用户！');
+					   } else if (msg == 2){
+						   $('#ConcernBtn').val('已关注');
+						   $('#ConcernBtn').attr('rel','delConcern');
+						   showSucceedMsg('关注成功!');
+					   } else if (msg == 3){
+						   showErrorMsg('未知错误');
+					   }
+					}
+				});	
+			} else if ( type == 'delConcern'){
+				$.ajax({
+					type : 'get',
+					url  : url,
+					data : {'op' : 'ajaxdel' , 'cuid' : cuid, 'random' : Math.random()},
+					success : function(msg){
+					   if(msg == 0){
+						   showErrorMsg('参数错误！','消息提示');
+					   } else if (msg == 1){
+						   showErrorMsg('操作失败，请尝试刷新页面重试！','消息提示');
+					   } else if (msg == 2){
+						   $('#ConcernBtn').val('加关注');
+						   $('#ConcernBtn').attr('rel','addConcern');
+						   showSucceedMsg('成功取消关注！','消息提示');
+					   } else if (msg == 3){
+						   showErrorMsg('未知错误！','消息提示'); 
+					   }
+					}
+				});	
+			}
+	});					   
+});
+
+//加好友
+function addFriend(fuid, url){
+	if(fuid == '' || fuid.length == 0){
+		showErrorMsg('缺少参数！','信息提示');
+		return false;
+	}
+	$.ajax({
+		   type : 'get',
+		   url : url,
+		   data : {'op' : 'add', 'fuid' : fuid , 'random' : Math.random()},
+		   success : function(msg){
+				if(msg == -1){
+					showErrorMsg('参数错误！','消息提示');
+				} else if (msg == -2){
+					showErrorMsg('添加好友失败,没有该用户的信息！','消息提示');
+				} else if (msg == -3){
+					showErrorMsg('添加好友失败,你不能添加自己为好友！','消息提示');
+				} else if (msg == -4){
+					showErrorMsg('添加好友未知错误,该错误已被记录！','消息提示');
+				} else if (msg == -5){
+					showErrorMsg('添加好友失败,你之前已经发送过好友请求,请耐心等待对方同意申请！','消息提示');
+				} else if (msg == -6){
+					showErrorMsg('添加好友失败,你们已经是好友了！','消息提示');
+				} else {
+					$.cover(true);
+					asyncbox.open({
+						id : 'addFriend',
+						title : '添加好友',
+						url : url,
+						data : {'op' : 'add', 'fuid' : fuid , 'random' : Math.random()},
+						width : 490,
+						height : 180,
+						scroll : 'no',
+						callback : function(action) {
+							if (action == 'close'){
+								$.cover(false);
+							}	
+						}
+					});	
+				}
+		   }
+	});	
+	
+}
+
+//发送短消息
+function postMessage(msguid, url){
+	if(msguid == '' || msguid.length == 0){
+		showErrorMsg('缺少参数！','信息提示');
+		return false;
+	}
+	
+	$.ajax({
+		   type : 'post',
+		   url : url,
+		   data : {'op' : 'ajaxpost', 'msguid' : msguid , 'random' : Math.random()},
+		   success : function(msg){
+				if(msg == -1){
+					showErrorMsg('发送失败，缺少收件人对象！','消息提示');
+				} else if(msg == -2){
+					showErrorMsg('发送失败，自己不能给自己发送短消息！','消息提示');
+				} else {
+					$.cover(true);
+					asyncbox.open({
+						id : 'postMessage',
+						title : '发送短消息',
+						url : url,
+						data : {'op' : 'ajaxpost', 'msguid' : msguid , 'random' : Math.random()},
+						width : 510,
+						height : 255,
+						scroll : 'no',
+						callback : function(action) {
+							if (action == 'close'){
+								$.cover(false);
+							}	
+						}
+					});	
+				}
+		   }
+	});	
+}
+
+</script>
+<div class="Blog_left">
+      <div class="Blog_left1 Blog_bg1">
+        <div class="Blog_left1_1">
+			<!-- 专家博客-->
+			<a href="http://blog.chinaunix.net/uid/26548237.html">                            <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar.php">
+                        </a>
+                        <p><a href="http://blog.chinaunix.net/uid/26548237.html">梦醒潇湘love</a></p>
+                     </div>
+        <ul class="Blog_ul1 Blog_noline1">
+          <li>博客访问： 1192334 </li>
+          <li>博文数量： 266 </li>
+          <li>博客积分： 1305 </li>
+          <!--<li>专家积分： 180</li>-->
+          <li>博客等级： 军士长 </li>
+		  <li>技术积分： 4591 </li>
+          <li>用  户  组：  普通用户</li>
+          <li>注册时间： 2011-12-17 10:37 </li>
+                            </ul>  
+
+
+        
+                <div class="HT_line3 HT_line3_1"></div>
+        <ul class="Blog_ul2">
+          <li><input type="button" value="加关注" id="ConcernBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+          <li><input type="button" value="短消息" id="postMessageBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+          <li><input type="button" value="论坛" onclick="location.href=&#39;http://bbs.chinaunix.net&#39;"></li>
+          <li><input type="button" value="加好友" id="addFriendBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+        </ul>
+              </div>
+            <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">个人简介</div>
+        <p class="Blog_p3">不懂的东西还有很多，随着不断的学习，不懂的东西更多，无法消灭更多不懂的东西，那就不断的充实自己吧。</p>
+      </div>
+        
+	 <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">CU论坛APP</div>
+        <div class="">
+                <div class="" style="float:left; margin-right:5px;">
+                 <img width="90" height="90" alt="" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/cuapp.png">
+                 </div><br>
+                <div class="" style="margin-top:10px;">
+                 <p class="">
+                         CU论坛APP
+                </p>
+                 <p class="">
+
+                 <br><br>
+                 APP发帖 享双倍积分
+                </p>
+                </div>
+        </div>
+	</div>
+         
+      <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">文章分类</div>
+        <div class="Blog_left2_1">
+          <p class="Blog_p4"><a href="http://blog.chinaunix.net/uid/26548237/list/1.html">全部博文</a>（266）</p>
+          <ul id="blogCla">
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-212257-list-1.html" title="机器学习">机器学习</a>（1）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-197958-list-1.html" title="Hadoop">Hadoop</a>（3）
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-191250-list-1.html" title="互联网广告">互联网广告</a>（0）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-207349-list-1.html" title="特征工程">特征工程</a>（0）</p>
+                                        </div>
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-184399-list-1.html" title="算法">算法</a>（2）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-184400-list-1.html" title="SearchForPatterns">SearchForPattern</a>（2）</p>
+                                        </div>
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-184328-list-1.html" title="TCP/IP">TCP/IP</a>（1）
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-184118-list-1.html" title="笔试题">笔试题</a>（4）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-185337-list-1.html" title="腾讯">腾讯</a>（2）</p>
+                                        </div>
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-183984-list-1.html" title="STL学习">STL学习</a>（5）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-181709-list-1.html" title="Big Data Process">Big&nbsp;Data&amp;nb</a>（1）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-180695-list-1.html" title="程序员自我修养">程序员自我修养</a>（4）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-178156-list-1.html" title="编程珠玑">编程珠玑</a>（6）
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-177952-list-1.html" title="面试编程题">面试编程题</a>（132）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-211824-list-1.html" title="Google">Google</a>（0）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-182031-list-1.html" title="智力题">智力题</a>（2）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181999-list-1.html" title="C/C++">C/C++</a>（11）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181919-list-1.html" title="数学相关">数学相关</a>（7）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181915-list-1.html" title="二分查找">二分查找</a>（7）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181888-list-1.html" title="数组">数组</a>（30）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181856-list-1.html" title="栈、队列、堆">栈、队列、堆</a>（4）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181518-list-1.html" title="单链表">单链表</a>（20）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-181463-list-1.html" title="经典二叉树">经典二叉树</a>（26）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-178273-list-1.html" title="字符串">字符串</a>（20）</p>
+                                        </div>
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-175858-list-1.html" title="数据挖掘">数据挖掘</a>（8）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-169960-list-1.html" title="杂谈">杂谈</a>（1）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-167345-list-1.html" title="信息检索">信息检索</a>（1）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-167197-list-1.html" title="Linux编程">Linux编程</a>（16）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-165902-list-1.html" title="Load Balance学习">Load Balance学习</a>（4）
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-165900-list-1.html" title="C/C++学习">C/C++学习</a>（23）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-184456-list-1.html" title="字节对齐">字节对齐</a>（3）</p>
+                                        </div>
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-157453-list-1.html" title="linux下多线程">linux下多线程</a>（3）
+                                </li>
+                            <li><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/cid-152003-list-1.html" title="数据结构与算法">数据结构与算法</a>（33）
+                                    <div style="display:none;" class="zk">
+					                        <p><a href="http://blog.chinaunix.net/uid/26548237/sid-175664-list-1.html" title="递归与分治">递归与分治</a>（2）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-174985-list-1.html" title="并查集">并查集</a>（1）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-173086-list-1.html" title="数据结构">数据结构</a>（1）</p>
+                                            <p><a href="http://blog.chinaunix.net/uid/26548237/sid-173085-list-1.html" title="算法">算法</a>（3）</p>
+                                        </div>
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-151765-list-1.html" title="Makefile">Makefile</a>（8）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-151675-list-1.html" title="Mongoose(web服务器)">Mongoose(web服务</a>（5）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid-150548-list-1.html" title="BitTorrent">BitTorrent</a>（2）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/26548237/cid--1-list-1.html" title="未分配的博文">未分配的博文</a>（3）
+                                </li>
+                      </ul>
+        </div>
+      </div>
+      	              <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">文章存档</div>
+        <div class="Blog_left2_1" id="blogdtr">
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/year-2015-list-1.html">2015年</a>（1）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201509-list-1.html">2015年09月</a>（1）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/year-2014-list-1.html">2014年</a>（5）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201408-list-1.html">2014年08月</a>（3）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201403-list-1.html">2014年03月</a>（2）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/year-2013-list-1.html">2013年</a>（222）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201311-list-1.html">2013年11月</a>（3）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201310-list-1.html">2013年10月</a>（15）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201309-list-1.html">2013年09月</a>（86）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201308-list-1.html">2013年08月</a>（54）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201307-list-1.html">2013年07月</a>（21）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201306-list-1.html">2013年06月</a>（12）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201305-list-1.html">2013年05月</a>（3）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201304-list-1.html">2013年04月</a>（8）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201303-list-1.html">2013年03月</a>（3）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201302-list-1.html">2013年02月</a>（1）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201301-list-1.html">2013年01月</a>（16）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/year-2012-list-1.html">2012年</a>（37）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201212-list-1.html">2012年12月</a>（5）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201210-list-1.html">2012年10月</a>（11）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201205-list-1.html">2012年05月</a>（2）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201202-list-1.html">2012年02月</a>（18）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201201-list-1.html">2012年01月</a>（1）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/26548237/year-2011-list-1.html">2011年</a>（1）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/26548237/year-201112-list-1.html">2011年12月</a>（1）</li>
+                      </ul>
+                  </div>
+      </div>
+      	  	        <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">我的朋友</div>
+        <ul class="Blog_ul4">
+                    <li><a href="http://blog.chinaunix.net/uid/30584099.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(1).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30584099.html" title="叶子裬">叶子裬</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30605855.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(2).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30605855.html" title="梦曦潇潇">梦曦潇潇</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31383615.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(3).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31383615.html" title="竹韵188">竹韵188</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/13776576.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(4).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/13776576.html" title="oxwangfeng">oxwangfe</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30455815.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(5).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30455815.html" title="GarfieldEr007">Garfield</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30345037.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(6).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30345037.html" title="习惯爱你的习惯">习惯爱你</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30294880.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(7).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30294880.html" title="jiayuanyuan1011">jiayuany</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30260672.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(8).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30260672.html" title="春春_inode">春春_ino</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/30265192.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(9).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/30265192.html" title="18004428510">18004428</a></p>
+          </li>
+                  </ul>
+      </div>
+	  	        <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">最近访客</div>
+        <ul class="Blog_ul4">
+                    <li><a href="http://blog.chinaunix.net/uid/31418938.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(10).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31418938.html" title="lee_yeon_hee">lee_yeon</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/29078352.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(11).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29078352.html" title="happykejie">happykej</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31419744.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(12).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31419744.html" title="麓山小白">麓山小白</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/29482215.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(13).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29482215.html" title="butterfly_c">butterfl</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/20574399.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(14).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/20574399.html" title="vesli">vesli</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/29655431.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(15).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29655431.html" title="Desmond_Lau">Desmond_</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31410258.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(16).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31410258.html" title="Gufan_jiaojiao">Gufan_ji</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/29298488.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(17).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29298488.html" title="青尘浊水">青尘浊水</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/29953825.html">              <img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/avatar(18).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29953825.html" title="hades2013">hades201</a></p>
+          </li>
+                  </ul>
+      </div>
+	           <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">微信关注</div>
+        <div class="">
+                <div class="" style="float:left; margin-right:5px;">
+                 <img width="90" height="90" alt="" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/IT168.jpg">
+                 </div><br>
+                <div class="" style="margin-top:10px;">
+                 <p class="">
+                         IT168企业级官微
+                </p>
+                 <p class="">
+
+                 <br><br>
+                 微信号：IT168qiye
+                </p>
+                </div>
+        </div>
+<hr size="1" style="clear:both;">
+        <div class="" style="clear:both;">
+                <div class="" style="float:left; margin-right:5px;">
+                 <img width="90" height="90" alt="" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/itpub.jpg">
+                 </div><br>
+                <div class="" style="margin-top:10px;">
+                 <p class="">
+                         系统架构师大会
+                </p>
+                 <p class="">
+
+                 <br><br>
+                 微信号：SACC2013
+                </p>
+                </div>
+        </div>
+
+</div>
+      <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">订阅</div>
+        <ul class="Blog_ul5">
+          <li><a href="http://blog.chinaunix.net/blog/rss/uid/26548237.html" class="Blog_a4"></a></li>
+          <li><a href="http://www.google.com/ig/add?feedurl=http%3A%2F%2Fblog.chinaunix.net%2Fuid%2F26548237.html" class="Blog_a5"></a></li>
+        </ul>
+      </div>
+      <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">推荐博文</div>
+        <ul class="Blog_ul6">
+				  			<li>·<a href="http://blog.chinaunix.net/uid-31396856-id-5756767.html" title="Tips：datapump异常中断后的处理">Tips：datapump异常中断后的...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-405749-id-5756764.html" title="Linux下反弹shell方法">Linux下反弹shell方法</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-20788636-id-5756762.html" title="LVS 内核实现分析（1）">LVS 内核实现分析（1）...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-22414998-id-5756746.html" title="关于数据抓取之xpath提取text为空问题的原因和解决方案">关于数据抓取之xpath提取text...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-16974460-id-5756728.html" title="apache下开启用ssl加密访问，即开启https">apache下开启用ssl加密访问，...</a></li>
+		  						  			<li>·<a href="http://blog.itpub.net/23718752/viewspace-2130620" title="关于闪回区溢出导致的数据hang（r11笔记第12天）">关于闪回区溢出导致的数据han...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/23718752/viewspace-2130449" title="闪回区报警引发的性能问题分析(r11笔记第11天)">闪回区报警引发的性能问题分...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/26015009/viewspace-2130428" title="Using FTP Transferring Non-ASM Datafiles to ASM diskgroup">Using FTP Transferring Non-...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/20674423/viewspace-2130362" title="Linux 无法从本地字符界面(tty1-tty6)登陆深度解析">Linux 无法从本地字符界面(tt...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/12798004/viewspace-2130342" title="本机运行x程序出现：Can&#39;t open display 原因及其解决方法">本机运行x程序出现：Can't op...</a></li>
+		  				
+        </ul>
+      </div>
+      <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">热词专题</div>
+        <ul class="Blog_ul6">
+                        <li class="no_line1">·<a href="http://blog.chinaunix.net/zt/1000/linux_1000000.shtml" target="blank" title="lua编译(linux)">lua编译(linux)</a></li>
+          <!--              <li>·<a href="http://www.dataguru.cn/zhuanti/hadoop220peizhi.shtml" target='blank' title='配置hadoop2.2.0格式化namenode问题'></a></li>
+              <li>·<a href="http://www.dataguru.cn/zhuanti/hadoopshouce.shtml" target='blank' title='hadoop2.2.0安装手册'></a></li>-->
+        </ul>
+      </div>
+	  
+
+	</div>
+<script language="javascript">
+$(document).ready(function(){
+    /*目录树JS效果*/
+	$('#blogCla li > span').click(function(){
+		var cla = $(this).attr('class');
+		if(cla == 'Blog_jia1'){
+			//$('#blogCla li > span').removeClass('Blog_jian1').addClass('Blog_jia1');
+			//$('#blogCla li > .zk').css('display', 'none');
+				
+			$(this).removeClass('Blog_jia1').addClass('Blog_jian1');
+            $(this).parent().children('.zk').css('display', 'block');
+		}else{
+			$(this).removeClass('Blog_jian1').addClass('Blog_jia1');
+            $(this).parent().children('.zk').css('display', 'none');
+		}
+	});
+		
+	$('#blogdtr > p > span').click(function(){
+		var cla = $(this).attr('class');
+		if(cla == 'Blog_jia1'){
+			//$('#blogdtr > .Blog_p4 > span').removeClass('Blog_jian1').addClass('Blog_jia1');
+			//$('#blogdtr ul').css('display', 'none');
+				
+			$(this).removeClass('Blog_jia1').addClass('Blog_jian1');
+            $(this).parent().next().css('display', 'block');
+		}else{
+			$(this).removeClass('Blog_jian1').addClass('Blog_jia1');
+            $(this).parent().next().css('display', 'none');
+		}
+	});
+});
+</script>    <!-- 右 -->
+    <div class="Blog_right1">
+      <div class="Blog_right1_1 Blog_right1_11">
+        <div class="Blog_right1_2 ">
+			<div class="img2"></div><!--推荐博文-->
+          <div class="Blog_tit4 Blog_tit5">
+                        <b class="Blog_b1"></b>
+            <a href="http://blog.chinaunix.net/uid-26548237-id-3483650.html">数据结构之图（存储结构、遍历）</a>
+            <em>2013-01-29 15:31:17</em>
+          </div>
+          <div class="Blog_con2">
+            <div class="Blog_con3">
+              <p>分类： <span>C/C++</span></p>
+			                <p></p>
+            </div>
+           <div class="Blog_wz1" style="word-wrap: break-word;">
+						<p>
+	<span style="font-size:16px;"><span style="line-height:2;"></span></span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><span style="line-height:24px;font-size:16px;color:#000000;"><strong>一、图的存储结构</strong></span></span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><span style="line-height:24px;font-size:16px;color:#000000;"><strong>1.1 邻接矩阵</strong></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 图的邻接矩阵存储方式是用两个数组来表示图。一个一维数组存储图中顶点信息，一个二维数组（邻接矩阵）存储图中的边或弧的信息。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 设图G有n个顶点，则邻接矩阵是一个n*n的方阵，定义为：</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359358455QE9d.png" width="262" height="43" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 看一个实例，下图左就是一个无向图。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359358505GMa9.png" width="414" height="178" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 从上面可以看出，无向图的边数组是一个对称矩阵。所谓对称矩阵就是n阶矩阵的元满足a</span><sub><span style="font-size:16px;color:#000000;">ij&nbsp;</span></sub><span style="font-size:16px;color:#000000;">= a</span><sub><span style="font-size:16px;color:#000000;">ji</span></sub><span style="font-size:16px;color:#000000;">。即从矩阵的左上角到右下角的主对角线为轴，右上角的元和左下角相对应的元全都是相等的。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 从这个矩阵中，很容易知道图中的信息。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; （1）要判断任意两顶点是否有边无边就很容易了；</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; （2）要知道某个顶点的度，其实就是这个顶点vi在邻接矩阵中第i行或（第i列）的元素之和；</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><span style="line-height:24px;font-size:16px;color:#000000;">&nbsp; &nbsp; （3）求顶点vi的所有邻接点就是将矩阵中第i行元素扫描一遍，arc[i][j]为1就是邻接点；</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 而有向图讲究入度和出度，顶点vi的入度为1，正好是第i列各数之和。顶点vi的出度为2，即第i行的各数之和。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 若图G是网图，有n个顶点，则邻接矩阵是一个n*n的方阵，定义为：</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359358929SkA2.png" width="362" height="71" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 这里的w</span><sub><span style="font-size:16px;color:#000000;">ij</span></sub><span style="font-size:16px;color:#000000;">表示(v</span><sub><span style="font-size:16px;color:#000000;">i</span></sub><span style="font-size:16px;color:#000000;">,v</span><sub><span style="font-size:16px;color:#000000;">j</span></sub><span style="font-size:16px;color:#000000;">)上的权值。无穷大表示一个计算机允许的、大于所有边上权值的值，也就是一个不可能的极限值。下面左图就是一个有向网图，右图就是它的邻接矩阵。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359359055yEhp.png" width="468" height="194" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><span style="line-height:24px;font-size:16px;color:#000000;">&nbsp; &nbsp; 那么邻接矩阵是如何实现图的创建的呢？代码如下。</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"> </span></span> 
+</p>
+<div><div id="highlighter_191763" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div><div class="line number34 index33 alt1">34</div><div class="line number35 index34 alt2">35</div><div class="line number36 index35 alt1">36</div><div class="line number37 index36 alt2">37</div><div class="line number38 index37 alt1">38</div><div class="line number39 index38 alt2">39</div><div class="line number40 index39 alt1">40</div><div class="line number41 index40 alt2">41</div><div class="line number42 index41 alt1">42</div><div class="line number43 index42 alt2">43</div><div class="line number44 index43 alt1">44</div><div class="line number45 index44 alt2">45</div><div class="line number46 index45 alt1">46</div><div class="line number47 index46 alt2">47</div><div class="line number48 index47 alt1">48</div><div class="line number49 index48 alt2">49</div><div class="line number50 index49 alt1">50</div><div class="line number51 index50 alt2">51</div><div class="line number52 index51 alt1">52</div><div class="line number53 index52 alt2">53</div><div class="line number54 index53 alt1">54</div><div class="line number55 index54 alt2">55</div><div class="line number56 index55 alt1">56</div><div class="line number57 index56 alt2">57</div><div class="line number58 index57 alt1">58</div><div class="line number59 index58 alt2">59</div><div class="line number60 index59 alt1">60</div><div class="line number61 index60 alt2">61</div><div class="line number62 index61 alt1">62</div><div class="line number63 index62 alt2">63</div><div class="line number64 index63 alt1">64</div><div class="line number65 index64 alt2">65</div><div class="line number66 index65 alt1">66</div><div class="line number67 index66 alt2">67</div><div class="line number68 index67 alt1">68</div><div class="line number69 index68 alt2">69</div><div class="line number70 index69 alt1">70</div><div class="line number71 index70 alt2">71</div><div class="line number72 index71 alt1">72</div><div class="line number73 index72 alt2">73</div><div class="line number74 index73 alt1">74</div><div class="line number75 index74 alt2">75</div><div class="line number76 index75 alt1">76</div><div class="line number77 index76 alt2">77</div><div class="line number78 index77 alt1">78</div><div class="line number79 index78 alt2">79</div><div class="line number80 index79 alt1">80</div><div class="line number81 index80 alt2">81</div><div class="line number82 index81 alt1">82</div><div class="line number83 index82 alt2">83</div><div class="line number84 index83 alt1">84</div><div class="line number85 index84 alt2">85</div><div class="line number86 index85 alt1">86</div><div class="line number87 index86 alt2">87</div><div class="line number88 index87 alt1">88</div><div class="line number89 index88 alt2">89</div><div class="line number90 index89 alt1">90</div><div class="line number91 index90 alt2">91</div><div class="line number92 index91 alt1">92</div><div class="line number93 index92 alt2">93</div><div class="line number94 index93 alt1">94</div><div class="line number95 index94 alt2">95</div><div class="line number96 index95 alt1">96</div><div class="line number97 index96 alt2">97</div><div class="line number98 index97 alt1">98</div><div class="line number99 index98 alt2">99</div><div class="line number100 index99 alt1">100</div><div class="line number101 index100 alt2">101</div><div class="line number102 index101 alt1">102</div><div class="line number103 index102 alt2">103</div><div class="line number104 index103 alt1">104</div><div class="line number105 index104 alt2">105</div><div class="line number106 index105 alt1">106</div><div class="line number107 index106 alt2">107</div><div class="line number108 index107 alt1">108</div><div class="line number109 index108 alt2">109</div><div class="line number110 index109 alt1">110</div><div class="line number111 index110 alt2">111</div><div class="line number112 index111 alt1">112</div><div class="line number113 index112 alt2">113</div><div class="line number114 index113 alt1">114</div><div class="line number115 index114 alt2">115</div><div class="line number116 index115 alt1">116</div><div class="line number117 index116 alt2">117</div><div class="line number118 index117 alt1">118</div><div class="line number119 index118 alt2">119</div><div class="line number120 index119 alt1">120</div><div class="line number121 index120 alt2">121</div><div class="line number122 index121 alt1">122</div><div class="line number123 index122 alt2">123</div><div class="line number124 index123 alt1">124</div><div class="line number125 index124 alt2">125</div><div class="line number126 index125 alt1">126</div><div class="line number127 index126 alt2">127</div><div class="line number128 index127 alt1">128</div><div class="line number129 index128 alt2">129</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp preprocessor">#include &lt;stdio.h&gt;</code></div><div class="line number2 index1 alt1"><code class="cpp preprocessor">#include &lt;stdlib.h&gt;</code></div><div class="line number3 index2 alt2"><code class="cpp preprocessor">#include &lt;curses.h&gt;</code></div><div class="line number4 index3 alt1">&nbsp;</div><div class="line number5 index4 alt2"><code class="cpp keyword bold">typedef</code> <code class="cpp color1 bold">char</code> <code class="cpp plain">VertexType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//顶点类型应由用户定义</code></div><div class="line number6 index5 alt1"><code class="cpp keyword bold">typedef</code> <code class="cpp color1 bold">int</code> <code class="cpp plain">EdgeType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//边上的权值类型应由用户定义</code></div><div class="line number7 index6 alt2">&nbsp;</div><div class="line number8 index7 alt1"><code class="cpp preprocessor">#define MAXVEX&nbsp; 100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //最大顶点数，应由用户定义</code></div><div class="line number9 index8 alt2"><code class="cpp preprocessor">#define INFINITY&nbsp;&nbsp;&nbsp; 65535&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//用65535来代表无穷大</code></div><div class="line number10 index9 alt1"><code class="cpp preprocessor">#define DEBUG</code></div><div class="line number11 index10 alt2">&nbsp;</div><div class="line number12 index11 alt1"><code class="cpp keyword bold">typedef</code> <code class="cpp keyword bold">struct</code></div><div class="line number13 index12 alt2"><code class="cpp plain">{</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">VertexType vexs[MAXVEX];&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//顶点表</code></div><div class="line number15 index14 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeType&nbsp;&nbsp; arc[MAXVEX][MAXVEX]; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//邻接矩阵，可看作边</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">numVertexes, numEdges;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//图中当前的顶点数和边数</code></div><div class="line number17 index16 alt2"><code class="cpp plain">}Graph;</code></div><div class="line number18 index17 alt1">&nbsp;</div><div class="line number19 index18 alt2"><code class="cpp comments">//定位</code></div><div class="line number20 index19 alt1"><code class="cpp color1 bold">int</code> <code class="cpp plain">locates(Graph *g, </code><code class="cpp color1 bold">char</code> <code class="cpp plain">ch)</code></div><div class="line number21 index20 alt2"><code class="cpp plain">{</code></div><div class="line number22 index21 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i = 0;</code></div><div class="line number23 index22 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g-&gt;numVertexes; i++)</code></div><div class="line number24 index23 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(g-&gt;vexs[i] == ch)</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number27 index26 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">break</code><code class="cpp plain">;</code></div><div class="line number28 index27 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number29 index28 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number30 index29 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(i &gt;= g-&gt;numVertexes)</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">-1;</code></div><div class="line number33 index32 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number34 index33 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number35 index34 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">i;</code></div><div class="line number36 index35 alt1"><code class="cpp plain">}</code></div><div class="line number37 index36 alt2">&nbsp;</div><div class="line number38 index37 alt1"><code class="cpp comments">//建立一个无向网图的邻接矩阵表示</code></div><div class="line number39 index38 alt2"><code class="cpp keyword bold">void</code> <code class="cpp plain">CreateGraph(Graph *g)</code></div><div class="line number40 index39 alt1"><code class="cpp plain">{</code></div><div class="line number41 index40 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i, j, k, w;</code></div><div class="line number42 index41 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"输入顶点数和边数:\n"</code><code class="cpp plain">);</code></div><div class="line number43 index42 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">scanf</code><code class="cpp plain">(</code><code class="cpp string">"%d,%d"</code><code class="cpp plain">, &amp;(g-&gt;numVertexes), &amp;(g-&gt;numEdges));</code></div><div class="line number44 index43 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number45 index44 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#ifdef DEBUG</code></div><div class="line number46 index45 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%d %d\n"</code><code class="cpp plain">, g-&gt;numVertexes, g-&gt;numEdges);</code></div><div class="line number47 index46 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#endif</code></div><div class="line number48 index47 alt1">&nbsp;</div><div class="line number49 index48 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g-&gt;numVertexes; i++)</code></div><div class="line number50 index49 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number51 index50 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;vexs[i] = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number52 index51 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(g-&gt;vexs[i] == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number53 index52 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number54 index53 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;vexs[i] = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number55 index54 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number56 index55 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number57 index56 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number58 index57 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#ifdef DEBUG</code></div><div class="line number59 index58 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g-&gt;numVertexes; i++)</code></div><div class="line number60 index59 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number61 index60 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g-&gt;vexs[i]);</code></div><div class="line number62 index61 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number63 index62 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"\n"</code><code class="cpp plain">);</code></div><div class="line number64 index63 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#endif</code></div><div class="line number65 index64 alt2">&nbsp;</div><div class="line number66 index65 alt1">&nbsp;</div><div class="line number67 index66 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g-&gt;numEdges; i++)</code></div><div class="line number68 index67 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number69 index68 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(j = 0; j &lt; g-&gt;numEdges; j++)</code></div><div class="line number70 index69 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number71 index70 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;arc[i][j] = INFINITY; </code><code class="cpp comments">//邻接矩阵初始化</code></div><div class="line number72 index71 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number73 index72 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number74 index73 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(k = 0; k &lt; g-&gt;numEdges; k++)</code></div><div class="line number75 index74 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number76 index75 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">char</code> <code class="cpp plain">p, q;</code></div><div class="line number77 index76 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"输入边(vi,vj)上的下标i，下标j和权值:\n"</code><code class="cpp plain">);</code></div><div class="line number78 index77 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number79 index78 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number80 index79 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(p == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number81 index80 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number82 index81 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number83 index82 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number84 index83 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">q = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number85 index84 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(q == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number86 index85 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number87 index86 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">q = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number88 index87 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number89 index88 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">scanf</code><code class="cpp plain">(</code><code class="cpp string">"%d"</code><code class="cpp plain">, &amp;w);&nbsp;&nbsp;&nbsp; </code></div><div class="line number90 index89 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number91 index90 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">m = -1;</code></div><div class="line number92 index91 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">n = -1;</code></div><div class="line number93 index92 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">m = locates(g, p);</code></div><div class="line number94 index93 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">n = locates(g, q);</code></div><div class="line number95 index94 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(n == -1 || m == -1)</code></div><div class="line number96 index95 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number97 index96 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">fprintf</code><code class="cpp plain">(stderr, </code><code class="cpp string">"there is no this vertex.\n"</code><code class="cpp plain">);</code></div><div class="line number98 index97 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code><code class="cpp plain">;</code></div><div class="line number99 index98 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number100 index99 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//getchar();</code></div><div class="line number101 index100 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;arc[m][n] = w;</code></div><div class="line number102 index101 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;arc[n][m] = g-&gt;arc[m][n];&nbsp; </code><code class="cpp comments">//因为是无向图，矩阵对称</code></div><div class="line number103 index102 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number104 index103 alt1"><code class="cpp plain">}</code></div><div class="line number105 index104 alt2">&nbsp;</div><div class="line number106 index105 alt1"><code class="cpp comments">//打印图</code></div><div class="line number107 index106 alt2"><code class="cpp keyword bold">void</code> <code class="cpp plain">printGraph(Graph g)</code></div><div class="line number108 index107 alt1"><code class="cpp plain">{</code></div><div class="line number109 index108 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i, j;</code></div><div class="line number110 index109 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number111 index110 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number112 index111 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(j = 0; j &lt; g.numVertexes; j++)</code></div><div class="line number113 index112 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number114 index113 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%d&nbsp; "</code><code class="cpp plain">, g.arc[i][j]);</code></div><div class="line number115 index114 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number116 index115 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"\n"</code><code class="cpp plain">);</code></div><div class="line number117 index116 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number118 index117 alt1"><code class="cpp plain">}</code></div><div class="line number119 index118 alt2">&nbsp;</div><div class="line number120 index119 alt1"><code class="cpp color1 bold">int</code> <code class="cpp plain">main(</code><code class="cpp color1 bold">int</code> <code class="cpp plain">argc, </code><code class="cpp color1 bold">char</code> <code class="cpp plain">**argv)</code></div><div class="line number121 index120 alt2"><code class="cpp plain">{</code></div><div class="line number122 index121 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">Graph g;</code></div><div class="line number123 index122 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number124 index123 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//邻接矩阵创建图</code></div><div class="line number125 index124 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">CreateGraph(&amp;g);</code></div><div class="line number126 index125 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">printGraph(g);</code></div><div class="line number127 index126 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">0;</code></div><div class="line number128 index127 alt1"><code class="cpp plain">}</code></div><div class="line number129 index128 alt2"><code class="cpp plain">&lt;/curses.h&gt;&lt;/stdlib.h&gt;&lt;/stdio.h&gt;</code></div></div></td></tr></tbody></table></div></div>
+<span style="font-size:16px;color:#000000;"> &nbsp;&nbsp; &nbsp;</span><span style="line-height:2;font-size:16px;color:#000000;"> 从代码中可以得到，n个顶点和e条边的无向网图的创建，时间复杂度为O(n + n</span><span style="line-height:2;"></span><sup><span style="line-height:2;font-size:16px;color:#000000;">2</span><span style="line-height:2;"></span></sup><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp;+ e)，其中对邻接矩阵Grc的初始化耗费了O(</span><span style="font-size:16px;white-space:normal;line-height:2;color:#000000;">n</span><span style="font-size:medium;white-space:normal;line-height:2;"></span><sup style="line-height:24px;white-space:normal;"><span style="line-height:2;font-size:16px;color:#000000;">2</span></sup><span style="font-size:16px;color:#000000;">)的时间。</span></span> 
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><strong>1.2 邻接表</strong></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 邻接矩阵是不错的一种图存储结构，但是，对于边数相对顶点较少的图，这种结构存在对存储空间的极大浪费。因此，找到一种数组与链表相结合的存储方法称为邻接表。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 邻接表的处理方法是这样的：</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; （1）图中顶点用一个一维数组存储，当然，顶点也可以用单链表来存储，不过，数组可以较容易的读取顶点的信息，更加方便。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;">&nbsp; &nbsp; （2）图中每个顶点vi的所有邻接点构成一个线性表，由于邻接点的个数不定，所以，用单链表存储，无向图称为顶点vi的边表，有向图则称为顶点vi作为弧尾的出边表。</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 例如，下图就是一个无向图的邻接表的结构。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359371746DDZF.png" width="504" height="137" alt=""><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 从图中可以看出，顶点表的各个结点由data和firstedge两个域表示，data是数据域，存储顶点的信息，firstedge是指针域，指向边表的第一个结点，即此顶点的第一个邻接点。边表结点由adjvex和next两个域组成。adjvex是邻接点域，存储某顶点的邻接点在顶点表中的下标，next则存储指向边表中下一个结点的指针。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 对于带权值的网图，可以在边表结点定义中再增加一个weight的数据域，存储权值信息即可。如下图所示。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_13593720165ssU.png" width="466" height="165" alt=""><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 对于邻接表结构，图的建立代码如下。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"> </span> 
+</p>
+<div><div id="highlighter_103741" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div><div class="line number34 index33 alt1">34</div><div class="line number35 index34 alt2">35</div><div class="line number36 index35 alt1">36</div><div class="line number37 index36 alt2">37</div><div class="line number38 index37 alt1">38</div><div class="line number39 index38 alt2">39</div><div class="line number40 index39 alt1">40</div><div class="line number41 index40 alt2">41</div><div class="line number42 index41 alt1">42</div><div class="line number43 index42 alt2">43</div><div class="line number44 index43 alt1">44</div><div class="line number45 index44 alt2">45</div><div class="line number46 index45 alt1">46</div><div class="line number47 index46 alt2">47</div><div class="line number48 index47 alt1">48</div><div class="line number49 index48 alt2">49</div><div class="line number50 index49 alt1">50</div><div class="line number51 index50 alt2">51</div><div class="line number52 index51 alt1">52</div><div class="line number53 index52 alt2">53</div><div class="line number54 index53 alt1">54</div><div class="line number55 index54 alt2">55</div><div class="line number56 index55 alt1">56</div><div class="line number57 index56 alt2">57</div><div class="line number58 index57 alt1">58</div><div class="line number59 index58 alt2">59</div><div class="line number60 index59 alt1">60</div><div class="line number61 index60 alt2">61</div><div class="line number62 index61 alt1">62</div><div class="line number63 index62 alt2">63</div><div class="line number64 index63 alt1">64</div><div class="line number65 index64 alt2">65</div><div class="line number66 index65 alt1">66</div><div class="line number67 index66 alt2">67</div><div class="line number68 index67 alt1">68</div><div class="line number69 index68 alt2">69</div><div class="line number70 index69 alt1">70</div><div class="line number71 index70 alt2">71</div><div class="line number72 index71 alt1">72</div><div class="line number73 index72 alt2">73</div><div class="line number74 index73 alt1">74</div><div class="line number75 index74 alt2">75</div><div class="line number76 index75 alt1">76</div><div class="line number77 index76 alt2">77</div><div class="line number78 index77 alt1">78</div><div class="line number79 index78 alt2">79</div><div class="line number80 index79 alt1">80</div><div class="line number81 index80 alt2">81</div><div class="line number82 index81 alt1">82</div><div class="line number83 index82 alt2">83</div><div class="line number84 index83 alt1">84</div><div class="line number85 index84 alt2">85</div><div class="line number86 index85 alt1">86</div><div class="line number87 index86 alt2">87</div><div class="line number88 index87 alt1">88</div><div class="line number89 index88 alt2">89</div><div class="line number90 index89 alt1">90</div><div class="line number91 index90 alt2">91</div><div class="line number92 index91 alt1">92</div><div class="line number93 index92 alt2">93</div><div class="line number94 index93 alt1">94</div><div class="line number95 index94 alt2">95</div><div class="line number96 index95 alt1">96</div><div class="line number97 index96 alt2">97</div><div class="line number98 index97 alt1">98</div><div class="line number99 index98 alt2">99</div><div class="line number100 index99 alt1">100</div><div class="line number101 index100 alt2">101</div><div class="line number102 index101 alt1">102</div><div class="line number103 index102 alt2">103</div><div class="line number104 index103 alt1">104</div><div class="line number105 index104 alt2">105</div><div class="line number106 index105 alt1">106</div><div class="line number107 index106 alt2">107</div><div class="line number108 index107 alt1">108</div><div class="line number109 index108 alt2">109</div><div class="line number110 index109 alt1">110</div><div class="line number111 index110 alt2">111</div><div class="line number112 index111 alt1">112</div><div class="line number113 index112 alt2">113</div><div class="line number114 index113 alt1">114</div><div class="line number115 index114 alt2">115</div><div class="line number116 index115 alt1">116</div><div class="line number117 index116 alt2">117</div><div class="line number118 index117 alt1">118</div><div class="line number119 index118 alt2">119</div><div class="line number120 index119 alt1">120</div><div class="line number121 index120 alt2">121</div><div class="line number122 index121 alt1">122</div><div class="line number123 index122 alt2">123</div><div class="line number124 index123 alt1">124</div><div class="line number125 index124 alt2">125</div><div class="line number126 index125 alt1">126</div><div class="line number127 index126 alt2">127</div><div class="line number128 index127 alt1">128</div><div class="line number129 index128 alt2">129</div><div class="line number130 index129 alt1">130</div><div class="line number131 index130 alt2">131</div><div class="line number132 index131 alt1">132</div><div class="line number133 index132 alt2">133</div><div class="line number134 index133 alt1">134</div><div class="line number135 index134 alt2">135</div><div class="line number136 index135 alt1">136</div><div class="line number137 index136 alt2">137</div><div class="line number138 index137 alt1">138</div><div class="line number139 index138 alt2">139</div><div class="line number140 index139 alt1">140</div><div class="line number141 index140 alt2">141</div><div class="line number142 index141 alt1">142</div><div class="line number143 index142 alt2">143</div><div class="line number144 index143 alt1">144</div><div class="line number145 index144 alt2">145</div><div class="line number146 index145 alt1">146</div><div class="line number147 index146 alt2">147</div><div class="line number148 index147 alt1">148</div><div class="line number149 index148 alt2">149</div><div class="line number150 index149 alt1">150</div><div class="line number151 index150 alt2">151</div><div class="line number152 index151 alt1">152</div><div class="line number153 index152 alt2">153</div><div class="line number154 index153 alt1">154</div><div class="line number155 index154 alt2">155</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">/* 邻接表表示的图结构 */</code></div><div class="line number2 index1 alt1"><code class="cpp preprocessor">#include &lt;stdio.h&gt;</code></div><div class="line number3 index2 alt2"><code class="cpp preprocessor">#include&lt;stdlib.h&gt;</code></div><div class="line number4 index3 alt1">&nbsp;</div><div class="line number5 index4 alt2"><code class="cpp preprocessor">#define DEBUG</code></div><div class="line number6 index5 alt1"><code class="cpp preprocessor">#define MAXVEX 1000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //最大顶点数</code></div><div class="line number7 index6 alt2"><code class="cpp keyword bold">typedef</code> <code class="cpp color1 bold">char</code> <code class="cpp plain">VertexType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//顶点类型应由用户定义</code></div><div class="line number8 index7 alt1"><code class="cpp keyword bold">typedef</code> <code class="cpp color1 bold">int</code> <code class="cpp plain">EdgeType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//边上的权值类型应由用户定义</code></div><div class="line number9 index8 alt2">&nbsp;</div><div class="line number10 index9 alt1"><code class="cpp keyword bold">typedef</code> <code class="cpp keyword bold">struct</code> <code class="cpp plain">EdgeNode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//边表结点</code></div><div class="line number11 index10 alt2"><code class="cpp plain">{</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">adjvex;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//邻接点域，存储该顶点对应的下标</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeType weigth;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//用于存储权值，对于非网图可以不需要</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">struct</code> <code class="cpp plain">EdgeNode *next;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//链域，指向下一个邻接点</code></div><div class="line number15 index14 alt2"><code class="cpp plain">}EdgeNode;</code></div><div class="line number16 index15 alt1">&nbsp;</div><div class="line number17 index16 alt2"><code class="cpp keyword bold">typedef</code> <code class="cpp keyword bold">struct</code> <code class="cpp plain">VertexNode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//顶点表结构</code></div><div class="line number18 index17 alt1"><code class="cpp plain">{</code></div><div class="line number19 index18 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">VertexType data;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//顶点域，存储顶点信息</code></div><div class="line number20 index19 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *firstedge;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//边表头指针</code></div><div class="line number21 index20 alt2"><code class="cpp plain">}VertexNode, AdjList[MAXVEX];</code></div><div class="line number22 index21 alt1">&nbsp;</div><div class="line number23 index22 alt2"><code class="cpp keyword bold">typedef</code> <code class="cpp keyword bold">struct</code></div><div class="line number24 index23 alt1"><code class="cpp plain">{</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">AdjList adjList;</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">numVertexes, numEdges;&nbsp; </code><code class="cpp comments">//图中当前顶点数和边数</code></div><div class="line number27 index26 alt2"><code class="cpp plain">}GraphList;</code></div><div class="line number28 index27 alt1">&nbsp;</div><div class="line number29 index28 alt2"><code class="cpp color1 bold">int</code> <code class="cpp plain">Locate(GraphList *g, </code><code class="cpp color1 bold">char</code> <code class="cpp plain">ch)</code></div><div class="line number30 index29 alt1"><code class="cpp plain">{</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i;</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; MAXVEX; i++)</code></div><div class="line number33 index32 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number34 index33 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(ch == g-&gt;adjList[i].data)</code></div><div class="line number35 index34 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number36 index35 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">break</code><code class="cpp plain">;</code></div><div class="line number37 index36 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number38 index37 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number39 index38 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(i &gt;= MAXVEX)</code></div><div class="line number40 index39 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number41 index40 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">fprintf</code><code class="cpp plain">(stderr,</code><code class="cpp string">"there is no vertex.\n"</code><code class="cpp plain">);</code></div><div class="line number42 index41 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">-1;</code></div><div class="line number43 index42 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number44 index43 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">i;</code></div><div class="line number45 index44 alt2"><code class="cpp plain">}</code></div><div class="line number46 index45 alt1">&nbsp;</div><div class="line number47 index46 alt2"><code class="cpp comments">//建立图的邻接表结构</code></div><div class="line number48 index47 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">CreateGraph(GraphList *g)</code></div><div class="line number49 index48 alt2"><code class="cpp plain">{</code></div><div class="line number50 index49 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i, j, k;</code></div><div class="line number51 index50 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *e;</code></div><div class="line number52 index51 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *f;</code></div><div class="line number53 index52 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"输入顶点数和边数:\n"</code><code class="cpp plain">);</code></div><div class="line number54 index53 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">scanf</code><code class="cpp plain">(</code><code class="cpp string">"%d,%d"</code><code class="cpp plain">, &amp;g-&gt;numVertexes, &amp;g-&gt;numEdges);</code></div><div class="line number55 index54 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number56 index55 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#ifdef DEBUG</code></div><div class="line number57 index56 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%d,%d\n"</code><code class="cpp plain">, g-&gt;numVertexes, g-&gt;numEdges);</code></div><div class="line number58 index57 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#endif</code></div><div class="line number59 index58 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number60 index59 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g-&gt;numVertexes; i++)</code></div><div class="line number61 index60 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number62 index61 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"请输入顶点%d:\n"</code><code class="cpp plain">, i);</code></div><div class="line number63 index62 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;adjList[i].data = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//输入顶点信息</code></div><div class="line number64 index63 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;adjList[i].firstedge = NULL;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//将边表置为空表</code></div><div class="line number65 index64 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(g-&gt;adjList[i].data == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number66 index65 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number67 index66 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;adjList[i].data = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number68 index67 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number69 index68 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number70 index69 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//建立边表</code></div><div class="line number71 index70 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(k = 0; k &lt; g-&gt;numEdges; k++)</code></div><div class="line number72 index71 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number73 index72 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"输入边(vi,vj)上的顶点序号:\n"</code><code class="cpp plain">);</code></div><div class="line number74 index73 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">char</code> <code class="cpp plain">p, q;</code></div><div class="line number75 index74 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number76 index75 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(p == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number77 index76 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number78 index77 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number79 index78 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number80 index79 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">q = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number81 index80 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(q == </code><code class="cpp string">'\n'</code><code class="cpp plain">)</code></div><div class="line number82 index81 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number83 index82 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">q = </code><code class="cpp functions bold">getchar</code><code class="cpp plain">();</code></div><div class="line number84 index83 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number85 index84 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">m, n;</code></div><div class="line number86 index85 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">m = Locate(g, p);</code></div><div class="line number87 index86 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">n = Locate(g, q);</code></div><div class="line number88 index87 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(m == -1 || n == -1)</code></div><div class="line number89 index88 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number90 index89 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code><code class="cpp plain">;</code></div><div class="line number91 index90 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number92 index91 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#ifdef DEBUG</code></div><div class="line number93 index92 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"p = %c\n"</code><code class="cpp plain">, p);</code></div><div class="line number94 index93 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"q = %c\n"</code><code class="cpp plain">, q);</code></div><div class="line number95 index94 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"m = %d\n"</code><code class="cpp plain">, m);</code></div><div class="line number96 index95 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"n = %d\n"</code><code class="cpp plain">, n);</code></div><div class="line number97 index96 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#endif</code></div><div class="line number98 index97 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number99 index98 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//向内存申请空间，生成边表结点</code></div><div class="line number100 index99 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">e = (EdgeNode *)</code><code class="cpp functions bold">malloc</code><code class="cpp plain">(</code><code class="cpp keyword bold">sizeof</code><code class="cpp plain">(EdgeNode));</code></div><div class="line number101 index100 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(e == NULL)</code></div><div class="line number102 index101 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number103 index102 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">fprintf</code><code class="cpp plain">(stderr, </code><code class="cpp string">"malloc() error.\n"</code><code class="cpp plain">);</code></div><div class="line number104 index103 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code><code class="cpp plain">;</code></div><div class="line number105 index104 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number106 index105 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//邻接序号为j</code></div><div class="line number107 index106 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">e-&gt;adjvex = n;</code></div><div class="line number108 index107 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//将e指针指向当前顶点指向的结构</code></div><div class="line number109 index108 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">e-&gt;next = g-&gt;adjList[m].firstedge;</code></div><div class="line number110 index109 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//将当前顶点的指针指向e</code></div><div class="line number111 index110 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;adjList[m].firstedge = e;</code></div><div class="line number112 index111 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number113 index112 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">f = (EdgeNode *)</code><code class="cpp functions bold">malloc</code><code class="cpp plain">(</code><code class="cpp keyword bold">sizeof</code><code class="cpp plain">(EdgeNode));</code></div><div class="line number114 index113 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(f == NULL)</code></div><div class="line number115 index114 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number116 index115 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">fprintf</code><code class="cpp plain">(stderr, </code><code class="cpp string">"malloc() error.\n"</code><code class="cpp plain">);</code></div><div class="line number117 index116 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code><code class="cpp plain">;</code></div><div class="line number118 index117 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number119 index118 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">f-&gt;adjvex = m;</code></div><div class="line number120 index119 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">f-&gt;next = g-&gt;adjList[n].firstedge;</code></div><div class="line number121 index120 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">g-&gt;adjList[n].firstedge = f;</code></div><div class="line number122 index121 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number123 index122 alt2"><code class="cpp plain">}</code></div><div class="line number124 index123 alt1">&nbsp;</div><div class="line number125 index124 alt2">&nbsp;</div><div class="line number126 index125 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">printGraph(GraphList *g)</code></div><div class="line number127 index126 alt2"><code class="cpp plain">{</code></div><div class="line number128 index127 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i = 0;</code></div><div class="line number129 index128 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#ifdef DEBUG</code></div><div class="line number130 index129 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"printGraph() start.\n"</code><code class="cpp plain">);</code></div><div class="line number131 index130 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp preprocessor">#endif</code></div><div class="line number132 index131 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</div><div class="line number133 index132 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(g-&gt;adjList[i].firstedge != NULL &amp;&amp; i &lt; MAXVEX)</code></div><div class="line number134 index133 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number135 index134 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"顶点:%c&nbsp; "</code><code class="cpp plain">, g-&gt;adjList[i].data);</code></div><div class="line number136 index135 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *e = NULL;</code></div><div class="line number137 index136 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">e = g-&gt;adjList[i].firstedge;</code></div><div class="line number138 index137 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(e != NULL)</code></div><div class="line number139 index138 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number140 index139 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%d&nbsp; "</code><code class="cpp plain">, e-&gt;adjvex);</code></div><div class="line number141 index140 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">e = e-&gt;next;</code></div><div class="line number142 index141 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number143 index142 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">i++;</code></div><div class="line number144 index143 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"\n"</code><code class="cpp plain">);</code></div><div class="line number145 index144 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number146 index145 alt1"><code class="cpp plain">}</code></div><div class="line number147 index146 alt2">&nbsp;</div><div class="line number148 index147 alt1"><code class="cpp color1 bold">int</code> <code class="cpp plain">main(</code><code class="cpp color1 bold">int</code> <code class="cpp plain">argc, </code><code class="cpp color1 bold">char</code> <code class="cpp plain">**argv)</code></div><div class="line number149 index148 alt2"><code class="cpp plain">{</code></div><div class="line number150 index149 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">GraphList g;</code></div><div class="line number151 index150 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">CreateGraph(&amp;g);</code></div><div class="line number152 index151 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">printGraph(&amp;g);</code></div><div class="line number153 index152 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">0;</code></div><div class="line number154 index153 alt1"><code class="cpp plain">}</code></div><div class="line number155 index154 alt2"><code class="cpp plain">&lt;/stdlib.h&gt;&lt;/stdio.h&gt;</code></div></div></td></tr></tbody></table></div></div>
+<span style="font-size:16px;color:#000000;"> &nbsp;&nbsp; &nbsp; 对于无向图，一条边对应都是两个顶点，所以，在循环中，一次就针对i和j分布进行插入。</span><br>
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 本算法的时间复杂度，对于n个顶点e条边来说，很容易得出是O(n+e)。</span> 
+</p>
+<p>
+	<span style="font-size:16px;color:#000000;"><span style="line-height:2;font-size:16px;color:#000000;"><strong>1.3 十字链表</strong></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;font-size:16px;color:#000000;">&nbsp; &nbsp; 对于有向图来说，邻接表是有缺陷的。关心了出度问题，想了解入度就必须要遍历整个图才知道，反之，逆邻接表解决了入度却不了解出度情况。下面介绍的这种有向图的存储方法：十字链表，就是把邻接表和逆邻接表结合起来的。</span><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 重新定义顶点表结点结构，如下所示。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359379404626B.png" width="357" height="25" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 其中firstin表示入边表头指针，指向该顶点的入边表中第一个结点，firstout表示出边表头指针，指向该顶点的出边表中的第一个结点。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 重新定义边表结构，如下所示。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359379502NBBu.png" width="379" height="25" alt=""><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 其中，tailvex是指弧起点在顶点表的下表，headvex是指弧终点在顶点表的下标，headlink是指入边表指针域，指向终点相同的下一条边，taillink是指边表指针域，指向起点相同的下一条边。如果是网，还可以增加一个weight域来存储权值。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:2;"><span style="font-size:16px;color:#000000;">&nbsp; &nbsp; 比如下图，顶点依然是存入一个一维数组，实线箭头指针的图示完全与邻接表相同。就以顶点v</span><sub><span style="font-size:16px;color:#000000;">0</span></sub><span style="font-size:16px;color:#000000;">来说，firstout指向的是出边表中的第一个结点v</span><sub><span style="font-size:16px;color:#000000;">3</span></sub><span style="font-size:16px;color:#000000;">。所以，</span><span style="font-size:16px;line-height:32px;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="white-space:normal;"><span style="font-size:16px;color:#000000;">0</span></sub><span style="font-size:16px;color:#000000;">边表结点hearvex = 3，而tailvex其实就是当前顶点</span><span style="font-size:16px;line-height:32px;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="white-space:normal;"><span style="font-size:16px;color:#000000;">0</span></sub><span style="font-size:16px;color:#000000;">的下标0，由于</span><span style="font-size:16px;line-height:32px;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="white-space:normal;"><span style="font-size:16px;color:#000000;">0</span></sub><span style="font-size:16px;color:#000000;">只有一个出边顶点，所有headlink和taillink都是空的。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/26548237_1359379826wexn.png" width="512" height="274" alt=""><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:16px;"><span style="color:#000000;">&nbsp; </span><span style="line-height:2;color:#000000;">&nbsp; 重点需要解释虚线箭头的含义。它其实就是此图的逆邻接表的表示。对于</span></span><span style="font-size:16px;line-height:2;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="font-size:medium;white-space:normal;"><span style="font-size:16px;line-height:2;color:#000000;">0</span></sub><span style="font-size:medium;line-height:32px;white-space:normal;"></span><span style="font-size:16px;line-height:2;color:#000000;">来说，它有两个顶点</span><span style="font-size:16px;line-height:2;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="font-size:medium;white-space:normal;"><span style="font-size:16px;line-height:2;color:#000000;">1</span></sub><span style="font-size:medium;line-height:32px;white-space:normal;"></span><span style="font-size:16px;line-height:2;color:#000000;">和</span><span style="font-size:16px;line-height:2;white-space:normal;color:#000000;">v</span><span style="font-size:medium;line-height:32px;white-space:normal;"></span><sub style="font-size:medium;white-space:normal;"><span style="font-size:16px;line-height:2;color:#000000;">2</span></sub><span style="font-size:medium;line-height:32px;white-space:normal;"></span><span style="font-size:16px;line-height:2;color:#000000;">的入边。因此的firstin指向顶点</span><span style="font-size:16px;line-height:2;white-space:normal;color:#000000;">v</span><span style="white-space:normal;line-height:2;font-size:16px;color:#000000;"><span style="font-size:16px;line-height:2;color:#000000;">1</span></span><span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;color:#000000;">的边表结点中headvex为0的结点，如上图圆圈1。接着由入边结点的headlink指向下一个入边顶点v</span><span style="line-height:2;color:#000000;"></span><sub><span style="line-height:2;color:#000000;">2</span><span style="line-height:2;color:#000000;"></span></sub><span style="line-height:2;color:#000000;">，如上图圆圈2。对于顶点v</span><span style="line-height:2;color:#000000;"></span><sub><span style="line-height:2;color:#000000;">1</span><span style="line-height:2;color:#000000;"></span></sub><span style="line-height:2;color:#000000;">，它有一个入边顶点v</span><span style="line-height:2;color:#000000;"></span><sub><span style="line-height:2;color:#000000;">2</span><span style="line-height:2;color:#000000;"></span></sub><span style="line-height:2;color:#000000;">，所以它的firstin指向顶点</span><span style="font-size:16px;line-height:2;white-space:normal;color:#000000;">v</span><span style="font-size:16px;line-height:24px;white-space:normal;"></span><sub style="white-space:normal;"><span style="line-height:2;color:#000000;">2</span></sub><span style="line-height:2;color:#000000;"></span><span style="line-height:2;color:#000000;">的边表结点中headvex为1的结点，如上图圆圈3。</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;color:#000000;">&nbsp; &nbsp; 十字链表的好处就是因为把邻接表和逆邻接表整合在一起，这样既容易找到以v为尾的弧，也容易找到以v为头的弧，因而比较容易求得顶点的出度和入度。</span><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;">&nbsp; &nbsp; 而且除了结构复杂一点外，其实创建图算法的时间复杂度是和邻接表相同的，因此，在有向图应用中，十字链表是非常好的数据结构模型。</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;">&nbsp; &nbsp; 这里就介绍以上三种存储结构，除了第三种存储结构外，其他的两种存储结构比较简单。</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;"><strong>二、图的遍历</strong></span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 图的遍历和树的遍历类似，希望从图中某一顶点出发访遍图中其余顶点，且使每一个顶点仅被访问一次，这一过程就叫图的遍历。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 对于图的遍历来说，如何避免因回路陷入死循环，就需要科学地设计遍历方案，通过有两种遍历次序方案：深度优先遍历和广度优先遍历。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;"><strong>2.1 深度优先遍历</strong></span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 深度优先遍历，也有称为深度优先搜索，简称DFS。其实，就像是一棵树的前序遍历。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 它从图中某个结点v出发，访问此顶点，然后从v的未被访问的邻接点出发深度优先遍历图，直至图中所有和v有路径相通的顶点都被访问到。若图中尚有顶点未被访问，则另选图中一个未曾被访问的顶点作起始点，重复上述过程，直至图中的所有顶点都被访问到为止。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 我们用邻接矩阵的方式，则代码如下所示。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"> </span></span></span> 
+</p>
+<div><div id="highlighter_969816" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div><div class="line number34 index33 alt1">34</div><div class="line number35 index34 alt2">35</div><div class="line number36 index35 alt1">36</div><div class="line number37 index36 alt2">37</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp preprocessor">#define MAXVEX&nbsp; 100&nbsp;&nbsp;&nbsp;&nbsp; //最大顶点数</code></div><div class="line number2 index1 alt1"><code class="cpp keyword bold">typedef</code> <code class="cpp color1 bold">int</code> <code class="cpp plain">Boolean;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//Boolean 是布尔类型，其值是TRUE 或FALSE</code></div><div class="line number3 index2 alt2"><code class="cpp plain">Boolean visited[MAXVEX];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//访问标志数组</code></div><div class="line number4 index3 alt1"><code class="cpp preprocessor">#define TRUE 1</code></div><div class="line number5 index4 alt2"><code class="cpp preprocessor">#define FALSE 0</code></div><div class="line number6 index5 alt1">&nbsp;</div><div class="line number7 index6 alt2"><code class="cpp comments">//邻接矩阵的深度优先递归算法</code></div><div class="line number8 index7 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">DFS(Graph g, </code><code class="cpp color1 bold">int</code> <code class="cpp plain">i)</code></div><div class="line number9 index8 alt2"><code class="cpp plain">{</code></div><div class="line number10 index9 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">j;</code></div><div class="line number11 index10 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = TRUE;</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g.vexs[i]);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//打印顶点，也可以其他操作</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(j = 0; j &lt; g.numVertexes; j++)</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number15 index14 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(g.arc[i][j] == 1 &amp;&amp; !visited[j])</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number17 index16 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DFS(g, j);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//对为访问的邻接顶点递归调用</code></div><div class="line number18 index17 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number19 index18 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number20 index19 alt1"><code class="cpp plain">}</code></div><div class="line number21 index20 alt2">&nbsp;</div><div class="line number22 index21 alt1"><code class="cpp comments">//邻接矩阵的深度遍历操作</code></div><div class="line number23 index22 alt2"><code class="cpp keyword bold">void</code> <code class="cpp plain">DFSTraverse(Graph g)</code></div><div class="line number24 index23 alt1"><code class="cpp plain">{</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i;</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number27 index26 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number28 index27 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = FALSE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//初始化所有顶点状态都是未访问过状态</code></div><div class="line number29 index28 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number30 index29 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[i])&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//对未访问的顶点调用DFS，若是连通图，只会执行一次</code></div><div class="line number33 index32 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number34 index33 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DFS(g,i);</code></div><div class="line number35 index34 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number36 index35 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number37 index36 alt2"><code class="cpp plain">}</code></div></div></td></tr></tbody></table></div></div>
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 如果使用的是邻接表存储结构，其DFSTraverse函数的代码几乎是相同的，只是在递归函数中因为将数组换成了链表而有不同，代码如下。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"> </span></span></span> 
+</p>
+<div><div id="highlighter_736283" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">//邻接表的深度递归算法</code></div><div class="line number2 index1 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">DFS(GraphList g, </code><code class="cpp color1 bold">int</code> <code class="cpp plain">i)</code></div><div class="line number3 index2 alt2"><code class="cpp plain">{</code></div><div class="line number4 index3 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *p;</code></div><div class="line number5 index4 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = TRUE;</code></div><div class="line number6 index5 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g-&gt;adjList[i].data);&nbsp;&nbsp; </code><code class="cpp comments">//打印顶点，也可以其他操作</code></div><div class="line number7 index6 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = g-&gt;adjList[i].firstedge;</code></div><div class="line number8 index7 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(p)</code></div><div class="line number9 index8 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number10 index9 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[p-&gt;adjvex])</code></div><div class="line number11 index10 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DFS(g, p-&gt;adjvex);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//对访问的邻接顶点递归调用</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = p-&gt;next;</code></div><div class="line number15 index14 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number16 index15 alt1"><code class="cpp plain">}</code></div><div class="line number17 index16 alt2">&nbsp;</div><div class="line number18 index17 alt1"><code class="cpp comments">//邻接表的深度遍历操作</code></div><div class="line number19 index18 alt2"><code class="cpp keyword bold">void</code> <code class="cpp plain">DFSTraverse(GraphList g)</code></div><div class="line number20 index19 alt1"><code class="cpp plain">{</code></div><div class="line number21 index20 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i;</code></div><div class="line number22 index21 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number23 index22 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number24 index23 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = FALSE;</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number27 index26 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number28 index27 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[i])</code></div><div class="line number29 index28 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number30 index29 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DFS(g, i);</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number33 index32 alt2"><code class="cpp plain">}</code></div></div></td></tr></tbody></table></div></div>
+<span style="color:#000000;">&nbsp;</span><span style="color:#000000;">&nbsp; &nbsp; 对比两个不同的存储结构的深度优先遍历算法，对于n个顶点e条边的图来说，邻接矩阵由于是二维数组，要查找某个顶点的邻接点需要访问矩阵中的所有元素，因为需要O(n</span><span style="color:#000000;"></span><sup><span style="color:#000000;">2</span></sup><span style="color:#000000;">)的时间。而邻接表做存储结构时，找邻接点所需的时间取决于顶点和边的数量，所以是O(n+e)。显然对于点多边少的稀疏图来说，邻接表结构使得算法在时间效率上大大提高。</span> 
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;"><strong>2.2 广度优先遍历</strong></span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;color:#000000;"><span style="font-size:16px;color:#000000;"><span style="line-height:2;color:#000000;">&nbsp; &nbsp; 广度优先遍历，又称为广度优先搜索，简称BFS。图的广度优先遍历就类似于树的层序遍历了。</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp; &nbsp; 邻接矩阵做存储结构时，广度优先搜索的代码如下。</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"> </span></span></span> 
+</p>
+<div><div id="highlighter_323006" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div><div class="line number34 index33 alt1">34</div><div class="line number35 index34 alt2">35</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">//邻接矩阵的广度遍历算法</code></div><div class="line number2 index1 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">BFSTraverse(Graph g)</code></div><div class="line number3 index2 alt2"><code class="cpp plain">{</code></div><div class="line number4 index3 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i, j;</code></div><div class="line number5 index4 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">Queue q;</code></div><div class="line number6 index5 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number7 index6 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number8 index7 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = FALSE;</code></div><div class="line number9 index8 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number10 index9 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">InitQueue(&amp;q);</code></div><div class="line number11 index10 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code><code class="cpp comments">//对每个顶点做循环</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[i])&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//若是未访问过</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number15 index14 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = TRUE;</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g.vexs[i]); </code><code class="cpp comments">//打印结点，也可以其他操作</code></div><div class="line number17 index16 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EnQueue(&amp;q, i);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//将此结点入队列</code></div><div class="line number18 index17 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(!QueueEmpty(q))&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="cpp comments">//将队中元素出队列，赋值给</code></div><div class="line number19 index18 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number20 index19 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">m;</code></div><div class="line number21 index20 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DeQueue(&amp;q, &amp;m);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code></div><div class="line number22 index21 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(j = 0; j &lt; g.numVertexes; j++)</code></div><div class="line number23 index22 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number24 index23 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp comments">//判断其他顶点若与当前顶点存在边且未访问过</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(g.arc[m][j] == 1 &amp;&amp; !visited[j])</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number27 index26 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[j] = TRUE;</code></div><div class="line number28 index27 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g.vexs[j]);</code></div><div class="line number29 index28 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EnQueue(&amp;q, j);</code></div><div class="line number30 index29 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number33 index32 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number34 index33 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number35 index34 alt2"><code class="cpp plain">} &lt;span style=</code><code class="cpp string">"line-height:2;font-family:'sans serif', tahoma, verdana, helvetica;"</code><code class="cpp plain">&gt;&nbsp;&nbsp;&lt;/span&gt;</code></div></div></td></tr></tbody></table></div></div>
+<span><span style="line-height:2;"> 
+<div><div id="highlighter_253341" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2">&nbsp;</div></div></td></tr></tbody></table></div></div>
+<span style="color:#000000;"></span><span style="color:#000000;font-size:16px;">&nbsp;&nbsp;&nbsp;&nbsp;对于邻接表的广度优先遍历，代码与邻接矩阵差异不大， 代码如下</span></span></span><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">。</span><br>
+</span></span> 
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"> </span></span></span> 
+</p>
+<div><div id="highlighter_400683" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div><div class="line number28 index27 alt1">28</div><div class="line number29 index28 alt2">29</div><div class="line number30 index29 alt1">30</div><div class="line number31 index30 alt2">31</div><div class="line number32 index31 alt1">32</div><div class="line number33 index32 alt2">33</div><div class="line number34 index33 alt1">34</div><div class="line number35 index34 alt2">35</div><div class="line number36 index35 alt1">36</div><div class="line number37 index36 alt2">37</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">//邻接表的广度遍历算法</code></div><div class="line number2 index1 alt1"><code class="cpp keyword bold">void</code> <code class="cpp plain">BFSTraverse(GraphList g)</code></div><div class="line number3 index2 alt2"><code class="cpp plain">{</code></div><div class="line number4 index3 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">i;</code></div><div class="line number5 index4 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EdgeNode *p;</code></div><div class="line number6 index5 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">Queue q;</code></div><div class="line number7 index6 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number8 index7 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number9 index8 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = FALSE;</code></div><div class="line number10 index9 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number11 index10 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">InitQueue(&amp;q);</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">for</code><code class="cpp plain">(i = 0; i &lt; g.numVertexes; i++)</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[i])</code></div><div class="line number15 index14 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[i] = TRUE;</code></div><div class="line number17 index16 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g.adjList[i].data);&nbsp;&nbsp; </code><code class="cpp comments">//打印顶点，也可以其他操作</code></div><div class="line number18 index17 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EnQueue(&amp;q, i);</code></div><div class="line number19 index18 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(!QueueEmpty(q))</code></div><div class="line number20 index19 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number21 index20 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">m;</code></div><div class="line number22 index21 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DeQueue(&amp;q, &amp;m);</code></div><div class="line number23 index22 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = g.adjList[m].firstedge;&nbsp;&nbsp;&nbsp;&nbsp; 找到当前顶点边表链表头指针</code></div><div class="line number24 index23 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">while</code><code class="cpp plain">(p)</code></div><div class="line number25 index24 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number26 index25 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">if</code><code class="cpp plain">(!visited[p-&gt;adjvex])</code></div><div class="line number27 index26 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">{</code></div><div class="line number28 index27 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">visited[p-&gt;adjvex] = TRUE;</code></div><div class="line number29 index28 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp functions bold">printf</code><code class="cpp plain">(</code><code class="cpp string">"%c "</code><code class="cpp plain">, g.adjList[p-&gt;adjvex].data);</code></div><div class="line number30 index29 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">EnQueue(&amp;q, p-&gt;adjvex);</code></div><div class="line number31 index30 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number32 index31 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">p = p-&gt;next;</code></div><div class="line number33 index32 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number34 index33 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number35 index34 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number36 index35 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">}</code></div><div class="line number37 index36 alt2"><code class="cpp plain">}&lt;span style=</code><code class="cpp string">"font-family:'sans serif', tahoma, verdana, helvetica;line-height:1.5;"</code><code class="cpp plain">&gt;&nbsp; &nbsp;&lt;/span&gt;</code></div></div></td></tr></tbody></table></div></div>
+<span><span style="line-height:2;"> 
+<div><div id="highlighter_905543" class="syntaxhighlighter  cpp"><div class="toolbar"></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2">&nbsp;</div></div></td></tr></tbody></table></div></div>
+<span style="color:#000000;"></span><span style="color:#000000;font-size:16px;">&nbsp; &nbsp; &nbsp;&nbsp;对比图的深度优先遍历与广度优先遍历算法，会发现，它们在时间复杂度上是一样的，不同之处仅仅在于对顶点的访问顺序不同。可见两者在全图遍历上是没有优劣之分的，只是不同的情况选择不同的算法。</span></span></span> 
+<p>
+	<br>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="color:#000000;">&nbsp;&nbsp;&nbsp;&nbsp;</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; <span style="font-size:14px;">参考：《大话数据结构》</span><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><br>
+</span></span></span>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><br>
+</span></span></span>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:14px;">&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp; &nbsp; 梦醒潇湘love</span><br>
+</span></span></span>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><span style="font-size:14px;">&nbsp;2013-01-29 &nbsp;15:30</span><br>
+</span></span></span>
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><span style="line-height:2;"><br>
+</span></span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="font-size:16px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><br>
+</span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>
+<p>
+	<span style="font-size:small;"><span style="line-height:24px;"><br>
+</span></span> 
+</p>                                   </div>
+            <!-- <div class="Blog_con3_1">管理员在2009年8月13日编辑了该文章文章。</div> -->
+            <div class="Blog_con2_1 Blog_con3_2">
+              <div>
+			  <!--<img src="/image/default/tu_8.png">-->
+			  <!-- JiaThis Button BEGIN -->
+				<div class="bdsharebuttonbox bdshare-button-style0-16" data-bd-bind="1481791144931"><a class="bds_more" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="more"></a><a class="bds_qzone" title="分享到QQ空间" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="qzone"></a><a class="bds_tsina" title="分享到新浪微博" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="tsina"></a><a class="bds_tqq" title="分享到腾讯微博" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="tqq"></a><a class="bds_renren" title="分享到人人网" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="renren"></a><a class="bds_weixin" title="分享到微信" href="http://blog.chinaunix.net/uid-26548237-id-3483650.html#" data-cmd="weixin"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+				<!-- JiaThis Button END -->
+			  </div>
+              阅读(91750) | 评论(3) | 转发(23) |
+			                <div class="HT_line3"></div>
+            </div>
+            <div class="Blog_con3_3">
+              <div><span id="digg_num">1</span><a href="javascript:void(0)" id="digg" bid="3483650" url="/blog/digg.html"></a></div>
+              <p>上一篇：<a href="http://blog.chinaunix.net/uid-26548237-id-3482778.html">数据结构之图（概念）</a></p>
+              <p>下一篇：<a href="http://blog.chinaunix.net/uid-26548237-id-3483827.html">数据结构之最小生成树</a></p>
+            </div>
+          </div>
+          <div class="Blog_con3_4">
+            <div class="Blog_tit2 Blog_tit6">相关热门文章</div>
+			            <ul class="Blog_ul7">
+						  <li><span class="Blog_span6"></span><a href="http://blog.chinaunix.net/uid-25057421-id-5711418.html" title="多磁盘自动分区自动挂载脚本" target="blank">多磁盘自动分区自动挂载脚本...</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://blog.chinaunix.net/uid-31051391-id-5711255.html" title="app开发需要多少钱" target="blank">app开发需要多少钱</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://blog.chinaunix.net/uid-29057948-id-5711106.html" title="Linux设备驱动程序学习（21）-内存映射和DMA-数据结构" target="blank">Linux设备驱动程序学习（21）-...</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://blog.chinaunix.net/uid-8679615-id-5710883.html" title="QEMU源码分析系列(二) " target="blank">QEMU源码分析系列(二) </a></li>
+						  <li><span class="Blog_span6"></span><a href="http://blog.chinaunix.net/uid-30415354-id-5710786.html" title="ZIP压缩算法详细分析及解压实例解释" target="blank">ZIP压缩算法详细分析及解压实...</a></li>
+			            </ul>
+			            <ul class="Blog_ul7">
+						  <li><span class="Blog_span7"></span><a href="http://blog.chinaunix.net/uid-26615473-id-3056538.html" title="test123" target="blank">test123</a></li>
+						  <li><span class="Blog_span7"></span><a href="http://blog.chinaunix.net/uid-23629988-id-3018793.html" title="编写安全代码——小心有符号数的右移操作" target="blank">编写安全代码——小心有符号数...</a></li>
+						  <li><span class="Blog_span7"></span><a href="http://blog.chinaunix.net/uid-233938-id-162619.html" title="使用openssl api进行加密解密" target="blank">使用openssl api进行加密解密...</a></li>
+						  <li><span class="Blog_span7"></span><a href="http://blog.chinaunix.net/uid-22889411-id-59688.html" title="彻底搞定C语言指针详解-完整版-时候初学者-必备" target="blank">彻底搞定C语言指针详解-完整版...</a></li>
+						  <li><span class="Blog_span7"></span><a href="http://blog.chinaunix.net/uid-233938-id-162628.html" title="一段自己打印自己的c程序" target="blank">一段自己打印自己的c程序...</a></li>
+			            </ul>
+            <ul class="Blog_ul7">
+						  <li><span class="Blog_span6"></span><a href="http://ask.chinaunix.net/question/785970" title="linux dhcp  peizhi roc" target="blank">linux dhcp  peizhi roc</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://ask.chinaunix.net/question/785964" title="关于Unix文件的软链接" target="blank">关于Unix文件的软链接</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://ask.chinaunix.net/question/785935" title="求教这个命令什么意思，我是新手，刚刚学习solaris" target="blank">求教这个命令什么意思，我是新...</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://ask.chinaunix.net/question/785919" title="sed -e &quot;/grep/d&quot; 是什么意思？谢谢" target="blank">sed -e "/grep/d" 是什么意思...</a></li>
+						  <li><span class="Blog_span6"></span><a href="http://ask.chinaunix.net/question/785702" title="谁能够帮我解决LINUX  2.6  10版本驱动" target="blank">谁能够帮我解决LINUX  2.6  10...</a></li>
+			            </ul>
+            <div class="clear"></div>
+          </div>
+		  <!--
+          <div class="Blog_con3_4 Blog_con3_5">
+            <div class="Blog_tit2 Blog_tit7">热门推荐</div>
+            <ul>
+			              <li><a href="" title="" target='blank' ></a></li>
+			            </ul>
+          </div>
+		  -->
+        </div>
+      </div>
+      <div class="Blog_right1_7" id="replyList">
+		<div class="Blog_tit3">给主人留下些什么吧！~~</div>
+														<!--不包含引用-->
+					<div class="Blog_right1_8">
+					  <div class="Blog_right_img1"><a href="http://blog.chinaunix.net/uid/27140500.html"><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/00_avatar_small.jpg" onerror="this.onerror=null;this.src=&#39;http://passport.ixpub.net/images/noavatar_small.gif&#39;"></a></div>
+					  <div class="Blog_right_font1">
+                                                                                            <p class="Blog_p5"><span><a href="http://blog.chinaunix.net/uid/27140500.html"><span style="color:black">xuexiyong<em></em></span></a></span>2015-12-15 13:29:57</p>
+                                              						<p class="Blog_p6">邻接表结构实现的创建图&nbsp;void&nbsp;CreateGraph(GraphList&nbsp;*g)，你是随意写的每个顶点加两个边数，和图片里的内容不一致，对吧？</p>                                     
+						<div class="div1"><a href="javascript:void(0);" class="Blog_a10" toid="27140500" bid="3483650" cid="625475" tname="xuexiyong">回复</a> | <a href="javascript:;" onclick="linkto();showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;);" class="box_report">举报</a></div>
+						<!-- 评论占位框-->
+						<div class="z_move_comment" style="display:none">
+						</div>
+					  </div>
+					  <div class="Blog_line1"></div>
+					</div>
+																<!--包含引用-->
+					<div class="Blog_right1_8">
+					  <div class="Blog_right_img1"><a href="http://blog.chinaunix.net/uid/26548237.html"><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/37_avatar_small.jpg" onerror="this.onerror=null;this.src=&#39;http://passport.ixpub.net/images/noavatar_small.gif&#39;"></a></div>
+					  <div class="Blog_right_font1">
+						<p class="Blog_p5"><span><a href="http://blog.chinaunix.net/uid/26548237.html">梦醒潇湘love</a></span>2013-02-16 23:19:41</p>
+												<p class="Blog_p7"><a href="http://blog.chinaunix.net/uid/24774106.html">Bean_lee</a>：没必要这么拘泥于book，数组的不足在于浪费空间，链表的不足在于cache的命中不行，可以综合数组和链表的有点，用变长数组来矩阵做邻接</p>
+												<p class="Blog_p8">说的对&nbsp;&nbsp;应该学会变通&nbsp;&nbsp;&nbsp;感谢</p><span class="span_text1"><a href="javascript:void(0);" class="Blog_a10" toid="26548237" bid="3483650" cid="586524" tname="梦醒潇湘love">回复</a> | <a href="javascript:;" onclick="linkto();showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;);" class="box_report">举报</a></span>
+						<!-- 评论占位框-->
+						<div class="z_move_comment" style="display:none"></div>
+					  </div>
+					  <div class="Blog_line1"></div>
+					</div>
+																<!--不包含引用-->
+					<div class="Blog_right1_8">
+					  <div class="Blog_right_img1"><a href="http://blog.chinaunix.net/uid/24774106.html"><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/06_avatar_small.jpg" onerror="this.onerror=null;this.src=&#39;http://passport.ixpub.net/images/noavatar_small.gif&#39;"></a></div>
+					  <div class="Blog_right_font1">
+                                              						<p class="Blog_p5"><span><a href="http://blog.chinaunix.net/uid/24774106.html"><span>Bean_lee</span></a></span>2013-01-30 11:39:12</p>
+                                              						<p class="Blog_p6">没必要这么拘泥于book，数组的不足在于浪费空间，链表的不足在于cache的命中不行，可以综合数组和链表的有点，用变长数组来矩阵做邻接</p>                                     
+						<div class="div1"><a href="javascript:void(0);" class="Blog_a10" toid="24774106" bid="3483650" cid="586344" tname="Bean_lee">回复</a> | <a href="javascript:;" onclick="linkto();showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;);" class="box_report">举报</a></div>
+						<!-- 评论占位框-->
+						<div class="z_move_comment" style="display:none">
+						</div>
+					  </div>
+					  <div class="Blog_line1"></div>
+					</div>
+											<!-- 评论分页-->
+		<div class="Blog_right1_6 Blog_right1_12">
+        		</div>
+		<!-- 评论分页-->
+        <div class="Blog_right1_10">
+          <div class="Blog_tit3">评论热议</div>
+		  		 <!--未登录 -->
+        <div class="Blog_right1_8">
+          <div class="nologin_con1"> 请登录后评论。
+            <p><a href="http://blog.chinaunix.net/site/login.html" onclick="linkto()">登录</a> <a href="http://sso.chinaunix.net/Register?return_url=http%3A%2F%2Ft.cublog.com%2F">注册</a></p>
+          </div>
+        </div>
+        <br>
+        <div>
+            <div style="float:left;margin-left:70px;margin-right:10px;">
+             <script type="text/javascript">
+            var cpro_id = "u1625692";
+            </script>
+            <script src="http://cpro.baidustatic.com/cpro/ui/c.js" type="text/javascript"></script>
+            </div>
+            <div style="margin-left:10px;">
+            <script type="text/javascript">
+            var cpro_id = "u1625694";
+            </script>
+            <script src="http://cpro.baidustatic.com/cpro/ui/c.js" type="text/javascript"></script>
+            </div>
+        </div>
+		
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="report_url" value="/blog/ViewReport.html">
+
+<script type="text/javascript">
+  	//测试字符串的长度 一个汉字算2个字节
+	function mb_strlen(str)
+	{
+		var len=str.length;
+		var totalCount=0;
+		for(var i=0;i<len;i++)
+		{
+			var c = str.charCodeAt(i);
+			if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) {
+				totalCount++;
+			}else{
+				totalCount+=2;
+			}
+		}
+		return totalCount;
+	}
+	/*
+	var Util = {};
+	Util.calWbText = function (text, max){
+		if(max === undefined)
+			max = 500;
+		var cLen=0;
+		var matcher = text.match(/[^\x00-\xff]/g),
+			wlen  = (matcher && matcher.length) || 0;
+		//匹配url链接正则 http://***
+		var pattern = /http:\/\/([\w-]+\.)+[\w-]+(\/*[\w-\.\/\?%&=][^\s^\u4e00-\u9fa5]*)?/gi;
+		//匹配的数据存入数组
+		var arrPt = new Array();
+		var i = 0;
+		while((result = pattern.exec(text)) != null){
+			arrPt[i] = result[0];
+			i++;
+		}
+		//替换掉原文本中的链接
+		for(var j = 0;j<arrPt.length;j++){
+			text = text.replace(arrPt[j],"");
+		}
+		//减掉链接所占的长度
+		return Math.floor((max*2 - text.length - wlen)/2 - 12*i);
+	};
+	*/
+	var allowComment = '0';
+	
+	//举报弹出层
+	function showJuBao(url, cid){
+		
+			$.cover(false);
+			asyncbox.open({
+				id  : 'report_thickbox',
+				url : url,
+				title : '举报违规',
+				width : 378,
+				height : 240,
+				scroll : 'no',
+				data : {
+					'cid'	 : cid,
+					'idtype' : 2 ,
+                                        'blogurl' : window.location.href
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+	}
+
+	$(function(){
+
+		//创建管理员删除的弹出层
+		$('#admin_article_del').click(function(){
+			$.cover(false);
+			asyncbox.open({
+				id : 'class_thickbox',
+				html : '<div class="HT_layer3_1"><ul><li class="HT_li1">操作原因：<select class="HT_sel7" id="del_type" name="del_type"><option value="广告文章">广告文章</option><option value="违规内容">违规内容</option><option value="标题不明">标题不明</option><option value="文不对题">文不对题</option></select></li><li class="HT_li1" ><input class="HT_btn4" id="admin_delete"  type="button" /></li></ul></div>',
+				title : '选择类型',
+				width : 300,
+				height : 150,
+				scroll : 'no',
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});
+		$('#admin_delete').live('click' , function(){
+			///blog/logicdel/id/3480184/url/%252Fblog%252Findex.html.html
+			var type = $('#del_type').val();
+			var url = '/blog/logicdel/id/3483650/url/%252Fuid%252F26548237.html.html';
+			window.location.href= url + '?type=' + type;
+		});
+
+
+		//顶  js中暂未添加&过滤 
+		$('#digg').live('click' , function(){
+
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			var bid = $('#digg').attr('bid');
+			var url = $('#digg').attr('url');
+
+			var digg_str = $.cookie('digg_id');
+			if(digg_str != null)
+			{
+				var arr= new Array(); //定义一数组
+
+				arr = digg_str.split(","); //字符分割     
+				for( i=0 ; i < arr.length ; i++ )   
+				{   
+					if(bid == arr[i])
+					{
+						showErrorMsg('已经赞过该文章', '消息提示'); 
+						return false;
+					}
+				} 
+			}
+			$.ajax({
+				type:"POST",
+				url:url,	
+				data: {
+					'bid' : bid 
+				},
+				dataType: 'json',
+				success:function(msg){
+					if(msg.error == 0)
+					{
+						var num = parseInt($('#digg_num').html(),10);
+						num += 1;
+						$('#digg_num').html(num);
+						$('#digg').die();
+
+						if(digg_str == null)
+						{
+							$.cookie('digg_id', bid, {expires: 30 , path: '/'});
+						}
+						else
+						{
+							$.cookie('digg_id', digg_str + ',' + bid, {expires: 30 , path: '/'});
+						}
+						showSucceedMsg('谢谢' , '消息提示');
+					}
+					else if(msg.error == 1)
+					{
+						//showErrorMsg(msg.error_content , '消息提示'); 
+						showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+					}
+					else if(msg.error == 2)
+					{
+						showErrorMsg(msg.error_content , '消息提示'); 
+					}
+				}
+			});
+		});
+		//举报弹出层
+		/*$('.box_report').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+			var url = $('#report_url').val();
+			var cid = $(this).attr('cid');
+			$.cover(false);
+			asyncbox.open({
+				id  : 'report_thickbox',
+				url : url,
+				title : '举报违规',
+				width : 378,
+				height : 240,
+				scroll : 'no',
+				data : {
+					'cid'	 : cid,
+					'idtype' : 2 
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});*/
+
+
+		//评论相关代码
+		
+		//点击回复显示评论框
+		$('.Blog_a10').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			if(allowComment == 1)
+			{
+				showErrorMsg('该博文不允许评论' , '消息提示'); 
+				return false;
+			}
+			var tid = $(this).attr('toid');//留言作者id
+			var bid = $(this).attr('bid');//blogid
+			var cid = $(this).attr('cid');//留言id
+			var tname = $(this).attr('tname');
+                         			var tpl  = '<div class="Blog_right1_9">';
+				tpl +=	 '<div class="div2">';
+				tpl +=     '<textarea name="" cols="" rows="" class="Blog_ar1_1" id="rmsg">文明上网，理性发言...</textarea>';
+				tpl +=	 '</div>';
+				tpl +=   '<div class="div3">';
+				tpl +=		'<div class="div3_2"><a href="javascript:void(0);" class="Blog_a11" id="quota_sbumit" url="/Comment/PostComment.html" tid="'+tid+'" bid="'+bid+'" cid="'+cid+'" tname="'+tname+'" ></a><a href="javascript:void(0)" id="qx_comment" class="Blog_a12"></a></div>';
+				tpl +=		'<div class="div3_1"><a href="javascript:void(0);" id="mface"><span></span>表情</a></div>';
+				tpl +=		'<div class="clear"></div>';
+				tpl +=	 '</div>';
+				tpl +=  '</div>';
+                                 			$('.z_move_comment').html('');
+			$(this).parents('.Blog_right1_8').find('.z_move_comment').html(tpl).show();
+		});
+		//引用的评论提交
+		$('#quota_sbumit').live('click' , function(){
+
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			var bid   = $(this).attr('bid');
+			var tid   = $(this).attr('tid');//被引用人的id
+			var qid   = $(this).attr('cid');//引用的id
+			var url = $(this).attr('url');
+			var text = $('#rmsg').val();
+			var tname = $(this).attr('tname');
+			if(text == '' || text=='文明上网，理性发言...')
+			{
+				showErrorMsg('评论内容不能为空！' , '消息提示'); 
+				return false;
+			}
+			else
+			{
+				if(mb_strlen(text) > 1000){
+					showErrorMsg('评论内容不能超过500个汉字' , '消息提示'); 
+					return false;
+				}
+			}
+		    $.ajax({
+		        type: "post",
+			    url: url ,
+			    data: {'bid': bid , 'to' : tid , 'qid' : qid , 'text': text , 'tname' : tname },
+				dataType: 'json',
+			    success: function(data){
+				    if(data.code == 1){
+						var tpl =  '<div class="Blog_right1_8">';
+							tpl+=     '<div class="Blog_right_img1"><a href="' +data.info.url+ '" >' + data.info.header + '</a></div>';
+							tpl+=     '<div class="Blog_right_font1">';
+							tpl+=         '<p class="Blog_p5"><span><a href="' +data.info.url+ '" >' + data.info.username + '</a></span>' + data.info.dateline + '</p>';
+							tpl+=         '<p class="Blog_p7"><a href="' + data.info.quota.url + '">' + data.info.quota.username + '</a>：'+ data.info.quota.content + '</p>';
+							tpl+=         '<p class="Blog_p8">' + data.info.content + '</p><span class="span_text1"><a href="javascript:void(0);" class="Blog_a10" toid=' + data.info.fuid + ' bid=' + data.info.bid + ' cid=' + data.info.cid + '  tname = ' + data.info.username + ' >回复</a> | 　<a class="comment_del_mark" style="cursor:pointer" url="' + data.info.delurl + '" >删除</a>　| 　<a href="javascript:showJuBao(\'/blog/ViewReport.html\','+data.info.cid+')" class="box_report" cid="' + data.info.cid + '" >举报</a></span></div>';
+							tpl+=         '<div class="z_move_comment" style="display:none"></div>';
+							tpl+=	      '<div class="Blog_line1"></div></div>';
+							$('#replyList .Blog_right1_8:first').before(tpl);
+							$('.z_move_comment').html('').hide();
+				    }
+					else if(data.code == -1){
+						//showErrorMsg(data.info , '消息提示'); 
+						showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+			        }
+                },
+			    error: function(){//请求出错处理
+                        
+                }
+			});
+		});
+		//底部发表评论
+		$('#submitmsg').click(function(){
+			if(allowComment == 1)
+			{
+				showErrorMsg('该博文不允许评论' , '消息提示'); 
+				return false;
+			}
+			var bid   = $(this).attr('bid');
+			var toid  = $(this).attr('toid');
+			var text = $('#reply').val();
+			var url = $(this).attr('url');
+			if(text == '' || text=='文明上网，理性发言...')
+			{
+				showErrorMsg('评论内容不能为空！' , '消息提示'); 
+				return false;
+			}
+			else
+			{
+				if(mb_strlen(text) > 1000){
+					showErrorMsg('评论内容不能超过500个汉字' , '消息提示'); 
+					return false;
+				}
+			}
+		    $.ajax({
+		        type: "post",
+			    url: url ,
+			    data: {'bid': bid , 'to' : toid ,'text': text},
+				dataType: 'json',
+			    success: function(data){
+				    if(data.code == 1)
+					{
+						var tpl   = '<div class="Blog_right1_8">';
+							tpl  +=   '<div class="Blog_right_img1"><a href="' +data.info.url+ '" >' + data.info.header + '</a></div>';
+							tpl  +=	  '<div class="Blog_right_font1">';
+							tpl  +=       '<p class="Blog_p5"><span><a href="' +data.info.url+ '" >' + data.info.username + '</a></span>' + data.info.dateline + '</p>';
+							tpl  +=       '<p class="Blog_p6">' + data.info.content + '</p>';
+							tpl  +=		  '<div class="div1"><a href="javascript:void(0);" class="Blog_a10"  toid=' + data.info.fuid + ' bid=' + data.info.bid + ' cid=' + data.info.cid + '>回复</a> | 　<a class="comment_del_mark" style="cursor:pointer" url="' + data.info.delurl + '">删除</a>　| 　<a href="javascript:showJuBao(\'/blog/ViewReport.html\','+data.info.cid+')" class="box_report" cid="' + data.info.cid + '">举报</a></div>';
+							tpl  +=		  '<div class="z_move_comment" style="display:none"></div>';
+							tpl  +=    '</div><div class="Blog_line1"></div></div>';
+							$('.Blog_tit3:first').after(tpl);
+							$('#reply').val('文明上网，理性发言...');
+					}
+					else if(data.code == -1)
+					{
+						showErrorMsg(data.info , '消息提示'); 
+			        }
+                },
+			    error: function(){//请求出错处理
+                        
+                }
+		    });
+			
+		});
+		//底部评论重置
+		$('#reset_comment').click(function(){
+			$('#reply').val('文明上网，理性发言...');
+		});
+		//取消回复
+		$('#qx_comment').live('click' , function(){
+			$('.z_move_comment').html('').hide();
+		});
+
+
+		$('#rmsg, #reply').live({
+		    focus:function(){
+			    if($(this).val() == '文明上网，理性发言...'){
+			        $(this).val('');
+			    }
+			},
+			blur:function(){
+		        if($(this).val() == ''){
+			        $(this).val('文明上网，理性发言...');
+			    }
+			}
+		});
+		//删除留言确认
+		$('.comment_del_mark').live('click' , function(){
+			var url = $(this).attr('url');
+			asyncbox.confirm('删除留言','确认', function(action){
+				if(action == 'ok')
+				{
+					location.href = url;
+				}
+			});
+		});
+		//删除时间确认
+		$('.del_article_id').click(function(){
+			var delurl = $(this).attr('delurl');
+			asyncbox.confirm('删除文章','确认', function(action){
+				if(action == 'ok')
+				{
+					location.href = delurl;
+				}
+			});
+		});
+		/*
+		//字数限制
+		$('#rmsg, #reply').live('keyup', function(){
+			var id = $(this).attr('id');
+			var left = Util.calWbText($(this).val(), 500);
+			var eid = '#errmsg';
+			
+			if(id == 'reply') eid =  '#rerrmsg';
+			if (left >= 0)
+		        $(eid).html('您还可以输入<span>' + left + '</span>字');
+		    else
+		        $(eid).html('<font color="red">您已超出<span>' + Math.abs(left) + '</span>字 </font>');
+		});
+		*/
+		//加载表情
+	    $('#face').qqFace({id : 'facebox1', assign : 'reply', path : '/image/qqface/'});
+	    $('#mface').qqFace({id : 'facebox', assign : 'rmsg', path:'/image/qqface/'});
+	    
+		/*
+		$('#class_one_id').change(function(){
+			alert(123213);
+			var id = parseInt($(this).val() , 10);
+			if(id == 0) return false;
+			$('.hidden_son_class span').each(function( index , dom ){
+				if( dom.attr('cid')  == id )
+				{
+				}
+			});
+		});
+		*/
+		//转载文章
+		var turn_url = "/blog/viewClassPart.html";
+		$('#repost_bar').click(function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+			var id = $(this).attr('bid');
+			asyncbox.open({
+				id  : 'turn_class_thickbox',
+				url : turn_url,
+				title : '转载文章',
+				width : 330,
+				height : 131,
+				scroll : 'no',
+				data : {
+					'id'	 : id
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});
+		/*
+	    //转发文章
+	    $('#repost_bar').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+	    	var bid  = $(this).attr('bid');
+	    	var url  = $(this).attr('url');
+	    	asyncbox.confirm('转载文章','确认', function(action){
+	    	  if(action == 'ok'){
+	    	    $.ajax({
+				type:"POST",
+				url:url,	
+				data: {
+					'bid' : bid 
+				},
+				dataType: 'json',
+				success:function(msg){
+				  if(msg.error == 0){
+				    showSucceedMsg('转发成功！', '消息提示');
+				  }else if(msg.error == 1){
+				    //location.href = '/index.php?r=site/login';
+					showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				  }else{
+				    showErrorMsg(msg.error_content, '消息提示');
+			      }
+				}
+			  });
+	    	  }
+	    	});
+
+		});
+		*/
+
+	});
+</script>
+<!--该部分应该放在输出代码块的后面才起作用 -->
+<script type="text/javascript">
+
+SyntaxHighlighter.autoloader(
+	'applescript			/highlight/scripts/shBrushAppleScript.js',
+	'actionscript3 as3		/highlight/scripts/shBrushAS3.js',
+	'bash shell				/highlight/scripts/shBrushBash.js',
+	'coldfusion cf			/highlight/scripts/shBrushColdFusion.js',
+	'cpp c					/highlight/scripts/shBrushCpp.js',
+	'c# c-sharp csharp		/highlight/scripts/shBrushCSharp.js',
+	'css					/highlight/scripts/shBrushCss.js',
+	'delphi pascal			/highlight/scripts/shBrushDelphi.js',
+	'diff patch pas			/highlight/scripts/shBrushDiff.js',
+	'erl erlang				/highlight/scripts/shBrushErlang.js',
+	'groovy					/highlight/scripts/shBrushGroovy.js',
+	'java					/highlight/scripts/shBrushJava.js',
+	'jfx javafx				/highlight/scripts/shBrushJavaFX.js',
+	'js jscript javascript	/highlight/scripts/shBrushJScript.js',
+	'perl pl				/highlight/scripts/shBrushPerl.js',
+	'php					/highlight/scripts/shBrushPhp.js',
+	'text plain				/highlight/scripts/shBrushPlain.js',
+	'py python				/highlight/scripts/shBrushPython.js',
+	'ruby rails ror rb		/highlight/scripts/shBrushRuby.js',
+	'scala					/highlight/scripts/shBrushScala.js',
+	'sql					/highlight/scripts/shBrushSql.js',
+	'vb vbnet				/highlight/scripts/shBrushVb.js',
+	'xml xhtml xslt html	/highlight/scripts/shBrushXml.js'
+);
+SyntaxHighlighter.all();
+
+
+function code_hide(id){
+	var code = document.getElementById(id).style.display;
+	if(code == 'none'){
+		document.getElementById(id).style.display = 'block';
+	}else{
+		document.getElementById(id).style.display = 'none';
+	}
+}
+</script>
+<!--回顶部js2011.12.30-->
+<script language="javascript">
+ lastScrollY=0;
+ function heartBeat(){
+ var diffY;
+ if (document.documentElement && document.documentElement.scrollTop)
+     diffY = document.documentElement.scrollTop;
+ else if (document.body)
+     diffY = document.body.scrollTop
+ else
+     {/*Netscape stuff*/}
+ percent=.1*(diffY-lastScrollY);
+ if(percent>0)percent=Math.ceil(percent);
+ else percent=Math.floor(percent);
+ document.getElementById("full").style.top=parseInt(document.getElementById("full").style.top)+percent+"px";
+ lastScrollY=lastScrollY+percent;
+ if(lastScrollY<200)
+ {
+ document.getElementById("full").style.display="none";
+ }
+ else
+ {
+ document.getElementById("full").style.display="block";
+ }
+ }
+ var gkuan=document.body.clientWidth;
+ var ks=(gkuan-960)/2-30;
+ suspendcode="<div id=\"full\" style='right:4px;POSITION:absolute;TOP:500px;z-index:100;width:20px; height:50px;cursor:pointer;'><a href=\"javascript:void(0)\" onclick=\"window.scrollTo(0,0);\"><img src=\"\/image\/top.png\" /></a></div>"
+ document.write(suspendcode);
+ window.setInterval("heartBeat()",1);
+ </script><div id="full" style="right: 4px; position: absolute; top: 6191px; z-index: 100; width: 20px; height: 50px; cursor: pointer; display: block;"><a href="javascript:void(0)" onclick="window.scrollTo(0,0);"><img src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/top.png"></a></div>
+  <!-- footer -->
+  <div class="Blog_footer" style="clear:both">
+    <div><a href="http://www.chinaunix.net/about/index.shtml" target="_blank" rel="nofollow">关于我们</a> | <a href="http://www.it168.com/bottomfile/it168.shtml" target="_blank" rel="nofollow">关于IT168</a> | <a href="http://www.chinaunix.net/about/connect.html" target="_blank" rel="nofollow">联系方式</a> | <a href="http://www.chinaunix.net/about/service.html" target="_blank" rel="nofollow">广告合作</a> | <a href="http://www.it168.com//bottomfile/flgw/fl.htm" target="_blank" rel="nofollow">法律声明</a> | <a href="http://sso.chinaunix.net/Register?return_url=http%3A%2F%2Fblog.chinaunix.net%2F" target="_blank" rel="nofollow">免费注册</a>
+      <p>Copyright  2001-2010 ChinaUnix.net All Rights Reserved 北京皓辰网域网络信息技术有限公司. 版权所有 </p>
+      <div>感谢所有关心和支持过ChinaUnix的朋友们
+        <p>京ICP证041476号 京ICP证060528号</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script language="javascript">
+
+//全局错误提示弹出框
+function showErrorMsg(content, title, url){
+	var url = url || '';
+	var title = title || '消息提示';
+	var html = '';
+	html += '<div class="HT_layer3_1 HT_layer3_2"><ul><li><p><span class="login_span1"></span>' + content + '</p></li>';
+	if(url == '' || url.length == 0){
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2"  onclick=\'close_windows("error_msg")\'></li>';	
+	} else {
+		html += '<li class="HT_li1"><input type="button" class="login_btn1" onclick="location.href=\'' + url + '\'"></li>';
+	}
+	html += '</ul></div>';
+	$.cover(true);
+	   asyncbox.open({
+		 id: 'error_msg',
+		 title : title,
+		 html : html,
+		 'callback' : function(action){
+			 if(action == 'close'){
+				 $.cover(false);
+			 }
+		 }
+	});
+}
+
+//全局正确提示
+function showSucceedMsg(content, title , url ){
+	var url = url || '';
+	var title = title || '消息提示';
+	var html = '';
+	html += '<div class="HT_layer3_1 HT_layer3_2"><ul><li><p><span class="login_span2"></span>' + content + '</p></li>';
+	if(url == '' || url.length == 0){
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2"  onclick=\'close_windows("error_msg")\'></li>';	
+	} else {
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2" onclick="location.href=\'' + url + '\'"></li>';
+	}
+	html += '</ul></div>';
+	$.cover(true);
+	asyncbox.open({
+		 id: 'error_msg',
+		 title : title,
+		 html : html,
+		 'callback' : function(action){
+			 if(action == 'close'){
+				 $.cover(false);
+			 }
+		 }
+	});
+}
+
+//关闭指定id的窗口
+function close_windows(id){
+	$.cover(false);
+	$.close(id);
+}
+
+
+//公告
+var tID;
+var tn;                        // 高度
+var nStopTime = 5000;        // 不同行间滚动时间隔的时间，值越小，移动越快
+var nSpeed = 50;            // 滚动时，向上移动一像素间隔的时间，值越小，移动越快
+var isMove = true;
+var nHeight = 25;
+var nS = 0;
+var nNewsCount = 3;
+
+/**
+ * n 用于表示是否为第一次运行
+ **/
+function moveT(n)
+{
+    clearTimeout(tID)
+    var noticev2 = document.getElementById("noticev2")
+    nS = nSpeed;
+    
+    // 只在第一次调用时运行，初始化环境（有没有参数）
+    if (n)
+    {
+        // 设置行高
+        noticev2.style.lineHeight = nHeight + "px";
+        // 初始化显示位置
+        tn = 0;
+        // 刚进入时在第一行停止时间
+        nS = nStopTime;
+    }
+    
+    // 判断鼠标是否指向层
+    if (isMove)
+    {
+        // 向上移动一像素
+        tn--;
+        // 如果移动到最下面一行了，则移到顶行
+        if (Math.abs(tn) == nNewsCount * nHeight)
+        {
+            tn = 0;
+        }
+        // 设置位置
+        noticev2.style.marginTop = tn + "px";
+        // 完整显示一行时，停止一段时间
+        if (tn % nHeight == 0)
+        {
+            nS = nStopTime;
+        }
+    }
+
+    tID = setTimeout("moveT()", nS);
+}
+moveT(1);    // 此处可以传入任何参数
+</script>
+<script language="javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/pv.js.下载"></script>
+<script>
+function sendPV(){
+    var pvTrack = new PvTrack();
+    pvTrack.type = 35; // 频道类别ID
+    pvTrack.channel = 189; // 频道ID
+    pvTrack.pageType = 0;
+    pvTrack.track();
+}
+window.setTimeout("sendPV()", 1000);
+</script>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-20237423-2']);
+  _gaq.push(['_setDomainName', '.chinaunix.net']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0ee5e8cdc4d43389b3d1bfd76e83216b' type='text/javascript'%3E%3C/script%3E"));
+
+function linkto(){
+    setCookie("returnUrl", location.href, 1481877510, "/");
+}
+function linktoOut(){
+    setCookie("returnOutUrl", location.href, 1481877510, "/");
+}
+//JS写COOKIE
+function setCookie(name, value, expires, path, domain){
+	if(!arguments[2]) expires = 3600 * 24;
+	if(!arguments[3]) path = "";
+	if(!arguments[4]) domain = "";
+	var str=name+"="+escape(value);
+	if(expires!=""){
+		var date=new Date();
+		date.setTime(date.getTime()+expires*1000);
+		str+=";expires="+date.toGMTString();
+	}
+	if(path!=""){
+		str+=";path="+path;//指定可访问cookie的目录
+	}
+	if(domain!=""){
+		str+=";domain="+domain;//指定可访问cookie的域
+	}
+	document.cookie = str;
+}
+
+</script><script src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/h.js.下载" type="text/javascript"></script>
+<script type="text/javascript" src="./数据结构之图（存储结构、遍历）-梦醒潇湘love-ChinaUnix博客_files/jquery.qqFace.js.下载"></script>
+
+
+<div id="asyncbox_cover" unselectable="on" style="opacity:0.1;filter:alpha(opacity=10);background:#000"></div><div id="asyncbox_clone"></div><div id="asyncbox_focus"></div><div id="asyncbox_load"><div><span></span></div></div></body></html>

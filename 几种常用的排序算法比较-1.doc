@@ -1,0 +1,217 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=gb2312">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<title>几种常用的排序算法比较</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>五星文库</o:Author>
+  <o:LastAuthor>五星文库</o:LastAuthor>
+  <o:Revision>6</o:Revision>
+  <o:TotalTime>59</o:TotalTime>
+  <o:Created>2016/12/13 22:54:49</o:Created>
+  <o:LastSaved>2016/12/13 22:54:49</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>101</o:Words>
+  <o:Characters>576</o:Characters>
+  <o:Company>五星文库</o:Company>
+  <o:Lines>4</o:Lines>
+  <o:Paragraphs>1</o:Paragraphs>
+  <o:CharactersWithSpaces>676</o:CharactersWithSpaces>
+  <o:Version>11.9999</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:PunctuationKerning/>
+  <w:DrawingGridVerticalSpacing>7.8 磅</w:DrawingGridVerticalSpacing>
+  <w:DisplayHorizontalDrawingGridEvery>0</w:DisplayHorizontalDrawingGridEvery>
+  <w:DisplayVerticalDrawingGridEvery>2</w:DisplayVerticalDrawingGridEvery>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:Compatibility>
+   <w:SpaceForUL/>
+   <w:BalanceSingleByteDoubleByteWidth/>
+   <w:DoNotLeaveBackslashAlone/>
+   <w:ULTrailSpace/>
+   <w:DoNotExpandShiftReturn/>
+   <w:AdjustLineHeightInTable/>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+   <w:DontGrowAutofit/>
+   <w:UseFELayout/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:宋体;
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-alt:SimSun;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+@font-face
+	{font-family:"\@宋体";
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	mso-pagination:none;
+	font-size:16.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:宋体;
+	mso-font-kerning:1.0pt;}
+h1
+	{mso-style-next:正文;
+	margin-top:17.0pt;
+	margin-right:0cm;
+	margin-bottom:16.5pt;
+	margin-left:0cm;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	line-height:240%;
+	mso-pagination:lines-together;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	font-size:22.0pt;
+	font-family:"Times New Roman";
+	mso-font-kerning:22.0pt;
+	font-weight:bold;}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:none;
+	tab-stops:center 207.65pt right 415.3pt;
+	layout-grid-mode:char;
+	border:none;
+	mso-border-bottom-alt:solid windowtext .75pt;
+	padding:0cm;
+	mso-padding-alt:0cm 0cm 1.0pt 0cm;
+	font-size:9.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:宋体;
+	mso-font-kerning:1.0pt;}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:none;
+	tab-stops:center 207.65pt right 415.3pt;
+	layout-grid-mode:char;
+	font-size:9.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:宋体;
+	mso-font-kerning:1.0pt;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0cm;
+	mso-margin-bottom-alt:auto;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:宋体;
+	mso-bidi-font-family:宋体;}
+ /* Page Definitions */
+ @page
+	{mso-page-border-surround-header:no;
+	mso-page-border-surround-footer:no;
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 89.85pt 72.0pt 89.85pt;
+	mso-header-margin:42.55pt;
+	mso-footer-margin:42.55pt;
+	mso-paper-source:0;
+	layout-grid:15.6pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:普通表格;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=ZH-CN link=blue vlink=purple style='tab-interval:21.0pt;text-justify-trim:punctuation'>
+
+<div class=Section1 style='layout-grid:15.6pt'>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:12.0pt;font-family:宋体;mso-ascii-font-family:"Times New Roman";mso-hansi-font-family:"Times New Roman";color:#993300'>《几种常用的排序算法比较》来自五星文库</span></b><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:12.0pt;color:#993300'><o:p></o:p></span></b></p>
+
+<p class=MsoNormal align=left style='text-align:left;line-height:150%;margin-top:3.6pt;'><span lang=EN-US style='font-size:9.0pt;line-height:150%'><a href="http://wxphp.com/wxss_g68o25im0n54nesjo2iofoevlhxlasscj_1.html"><span lang=EN-US style='font-family:宋体;mso-ascii-font-family:"Times New Roman";mso-hansi-font-family:"Times New Roman";text-decoration:none;text-underline:none'><span lang=EN-US>点这里，有很多篇《几种常用的排序算法比较》</span></span></a><o:p></o:p></span></p>
+
+<p class=MsoNormal align=left style='text-align:left'><span style='font-size:12.0pt;font-family:宋体;mso-ascii-font-family:"Times New Roman";mso-hansi-font-family:"Times New Roman";color:#993300'>在线阅读本文：</span><span lang=EN-US style='font-size:12.0pt;color:#999999'><a href="http://wxphp.com/wxd_8nh8u09ncw8az813iuwm_1.html"><span
+style='text-decoration:none;text-underline:none'>http://wxphp.com/wxd_8nh8u09ncw8az813iuwm_1.html</span></a><o:p></o:p></span></p>
+
+<p class=MsoNormal align=center style='margin-top:15.6pt;margin-right:0cm;margin-bottom:23.4pt;margin-left:0cm;mso-para-margin-top:1.0gd;mso-para-margin-right:
+0cm;mso-para-margin-bottom:1.5gd;mso-para-margin-left:0cm;text-align:center'><b style='mso-bidi-font-weight:normal'><span style='font-size:22.0pt;font-family:
+宋体'>几种常用的排序算法比较<span lang=EN-US><o:p></o:p></span></span></b></p>
+
+<div style='margin-top:2.5pt;margin-bottom:2.5pt'>
+
+<div style='margin-top:7.8pt;margin-right:0cm;margin-bottom:12.45pt;margin-left:0cm;mso-para-margin-top:.5gd;mso-para-margin-right:0cm;mso-para-margin-bottom:.5gd;mso-para-margin-left:0cm;text-align:justify;text-justify:inter-ideograph;text-indent:32.0pt;mso-char-indent-count:2.0;line-height:22.0pt;mso-line-height-rule:exactly;mso-pagination:none;font-size:16.0pt;mso-bidi-font-family:"Times New Roman";mso-font-kerning:1.0pt'>                                                <p>几种常见排序算法的比较与实现</p>                                                                <p>1冒泡排序（Bubble Sort）</p>                                                                <p>冒泡排序方法是最简单的排序方法。这种方法的基本思想是，将待排序的元素看作是竖着排列的“气泡”，较小的元素比较轻，从而要往上浮。在冒泡排序算法中我们要对这个“气泡”序列处理若干遍。所谓一遍处理，就是自底向上检查一遍这个序列，并时刻注意两个相邻的元素的顺序是否正确。如果发现两个相邻元素的顺序不对，即“轻”的元素在下面，就交换它们的位置。显然，处理一遍之后，“最轻”的元素就浮到了最高位置；处理二遍之后，“次轻”的元素就浮到了次高位置。在作第二遍处理时，由于最高位置上的元素已是“最轻”元素，所以不必检查。一般地，第i遍处理时，不必检查第i高位置以上的元素，因为经过前面i-1遍的处理，它们已正确地排好序。</p>                                                                <p>冒泡排序是稳定的。算法时间复杂度是O(n^2)。 2选择排序（Selection Sort）</p>                                                                <p>选择排序的基本思想是对待排序的记录序列进行n-1遍的处理，第i遍处理是将L[i..n]中最小者与L[i]交换位置。这样，经过i遍处理之后，前i个记录的位置已经是正确的了。</p>                                                                <p>选择排序是不稳定的。算法复杂度是O(n^2 )。 3插入排序（Insertion Sort）</p>                                                                <p>插入排序的基本思想是，经过i-1遍处理后,L[1..i-1]己排好序。第i遍处理仅将L[i]插入L[1..i-1]的适当位置，使得L[1..i]又是排好序的序列。要达到这个目的，我们可以用顺序比较的方法。首先比较L[i]和L[i-1]，如果L[i-1]≤ L[i]，则L[1..i]已排好序，第i遍处理就结束了；否则交换L[i]与L[i-1]的位置，继续比较L[i-1]和L[i-2]，直到找到某一个位置j(1≤j≤i-1)，使得L[j] ≤L[j+1]时为止。图1演示了对4个元素进行插入排序的过程，共需要(a),(b),(c)三次插入。</p>                                                                <p>直接插入排序是稳定的。算法时间复杂度是O(n^2) 4堆排序</p>                                                                <p>堆排序是一种树形选择排序，在排序过程中，将A[n]看成是完全二叉树的顺序存储结构，利用完全二叉树中双亲结点和孩子结点之间的内在关系来选择最小的元素。</p>                                                                <p>堆排序是不稳定的。算法时间复杂度O(nlog n)。 5归并排序</p>                                                                <p>设有两个有序（升序）序列存储在同一数组中相邻的位置上，不妨设为A[l..m]，A[m+1..h]，将它们归并为一个有序数列，并存储在A[l..h]。</p>                                                                <p>其时间复杂度无论是在最好情况下还是在最坏情况下均是O(nlog2n)。 6快速排序</p>                                                                <p>快速排序是对冒泡排序的一种本质改进。它的基本思想是通过一趟扫描后，使得排序序列的长度能大幅度地减少。在冒泡排序中，一次扫描只能确保最大数值的数移到正确位置，而待排序序列的长度可能只减少1。快速排序通过一趟扫描，就能确保某个数（以它为基准点吧）的左边各数都比它小，右边各数都比它</p>                                                                <p> </p>                                                                                                                        <p>大。然后又用同样的方法处理它左右两边的数，直到基准点的左右只有一个元素为止。</p>                                                                <p>快速排序是不稳定的。最理想情况算法时间复杂度O(nlog2n)，最坏O(n ^2)。 7希尔排序</p>                                                                <p>在直接插入排序算法中，每次插入一个数，使有序序列只增加1个节点，并且对插入下一个数没有提供任何帮助。如果比较相隔较远距离（称为增量）的数，使得数移动时能跨过多个元素，则进行一次比较就可能消除多个元素交换。D.L.shell于1959年在以他名字命名的排序算法中实现了这一思想。算法先将要排序的一组数按某个增量d分成若干组，每组中记录的下标相差d.对每组中全部元素进行排序，然后再用一个较小的增量对它进行，在每组中再进行排序。当增量减到1时，整个要排序的数被分成一组，排序完成。</p>                                                                <p>希尔排序是不稳定的。算法时间复杂度是O(n^2)。 例如：假设待排序文件有10个记录，其关键字分别是：         49，38，65，97，76</p>                                                                                                                                                                                                <p>增量序列的取值依次为：         5，3，1</p>                                                                <p>按增量5分两组。第一次排序后结果为：</p>                                                                                                                                                                                                                                                                                                                                <p>76，</p>                                                                <p>按增量3分组，第二次排序后结果为：</p>                                                                <p>13，0438，27，49，55，65，97，76</p>                                                                <p>按增量1分组，第三次排序后结果为：</p>                                                                                                                                                                                                <p> </p>                                                                                                                        <p> </p>                                                                <p>#include &lt;iostream&gt; #include &lt;ctime&gt; const int SIZE = 100; const int MAX = 1000; using namespace std;</p>                                                                <p>//交换数据</p>                                                                <p>void Swap(int &amp;a, int &amp;b) {</p>                                                                <p>int temp = a;     a = b;     b = temp; }</p>                                                                <p>//冒泡排序</p>                                                                <p>void BubbleSort(int *arr, int size) { int i, j;     for(i=0;i&lt;size-1;i++)</p>                                                                <p>for(j=size-1;j&gt;i;j--)//最先从arr[0]开始排序</p>                                                                <p>// for(j=0;j&lt;size-i-1;j++)  //最先从arr[size-1]开始排序      if(arr[j] &lt; arr[j-1])</p>                                                                <p>Swap(arr[j], arr[j-1]); }</p>                                                                <p>for(i=0;i&lt;n-1;i++)  //选择排序</p>                                                                <p>void SelectionSort(int *arr, int size)     {  {        k=i; /*给记号赋值*/      int i, j, min;        for(j=i+1;j&lt;n;j++)      //找出从a[i]到a[size-1]的最小元素的位          if(a[k]&gt;a[j]) k=j; /*是k总是指向置 最小元素*/      for(i=0;i&lt;size-1;i++)           if(i!=k) //当k!=i时才交换，否则    { a即为最小         min = i; {          for(j=i+1;j&lt;size;j++)                 temp=a;              if(arr[min] &gt; arr[j])                 a=a[k];                  min = j;                 a[k]=temp;</p>                                                                <p>}          //将a[i]与a[min]的数据交换</p>                                                                <p>Swap(arr[i], arr[min]);     }      } } }  :方法2：</p>                                                                <p>void choiseSort(int *a,int n)  {</p>                                                                <p>int i,j,k,temp;</p>                                                                <p> </p>                                                                                                                                                                                                                                                        <p>//插入排序</p>                                                                <p>void InsertSort(int *arr, int size) {</p>                                                                <p>int fOut, loc, temp;</p>                                                                <p>for(fOut = 1; fOut &lt; size; fOut++)         if(arr[fOut]&lt;arr[fOut-1])         {</p>                                                                <p>temp = arr[fOut];             loc = fOut;             do             {</p>                                                                <p>arr[loc] = arr[loc-1];                 loc--;</p>                                                                <p>}while(loc&gt;0 &amp;&amp; arr[loc-1]&gt;temp);             arr[loc] = temp;         } }</p>                                                                <p>//快速排序</p>                                                                <p>快速法定义了三个参数，（数组首地址*a,要排序数组起始元素下标i,要排序数组结束元素下标j). 它首先选一个数组元素（一般为a[(i+j)/2],即中间元素）作为参照，把比它小的元素放到它的左边，比它大的放在右边。然后运用递归，在将它左，右两个子数组排序，最后完成整个数组的排序。</p>                                                                <p>int Partition(int *arr, int first, int last) {</p>                                                                <p>int i, small, x;</p>                                                                <p>//为了减少最差情况的出现频率而作的一种优化     swap(arr[first], arr[ (first+last)/2 ]);     x = arr[first];     small = first;</p>                                                                <p>for(i=first+1;i&lt;=last;i++)         if(arr[i] &lt; x)         {</p>                                                                <p>small++;</p>                                                                <p>swap(arr[small], arr[i]);         }</p>                                                                <p>swap(arr[first], arr[small]);          return small; }</p>                                                                <p>void RecQuick(int *arr, int first, int last) {</p>                                                                <p>int pivotPos;</p>                                                                <p> </p>                                                                        </div>
+
+<p style='margin-top:7.8pt;margin-right:0cm;margin-bottom:12.45pt;margin-left:0cm;mso-para-margin-top:.5gd;mso-para-margin-right:0cm;mso-para-margin-bottom:.8gd;mso-para-margin-left:0cm;text-align:justify;text-justify:inter-ideograph;text-indent:32.0pt;mso-char-indent-count:2.0;line-height:24.0pt;mso-line-height-rule:exactly;mso-pagination:none'><span lang=EN-US style='font-size:16.0pt;mso-bidi-font-family:"Times New Roman";mso-font-kerning:1.0pt'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoFooter align=center style='text-align:center'><span
+style='font-family:宋体;mso-ascii-font-family:"Times New Roman";mso-hansi-font-family:"Times New Roman";color:#993300'>五星文库</span><span lang=EN-US><a
+href="http://wxphp.com/">http://wxphp.com/</a></span></p>
+
+<p class=MsoFooter align=center style='text-align:center'><span
+style='font-family:宋体;mso-ascii-font-family:"Times New Roman";mso-hansi-font-family:"Times New Roman";color:#993300'>免费文档下载</span><span lang=EN-US style='font-size:16.0pt;mso-bidi-font-size:10.0pt;color:#993300'><o:p></o:p></span></p>
+
+</div></div>
+
+</body></html>
